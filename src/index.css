@@ -51,17 +51,6 @@
     /* Spotlight colour (HSL channels). Overridden per background. */
     --spot-color: 36 100% 60%;
   }
-
-  /* Samurai theme — crimson + gold palette. */
-  [data-theme="samurai"] {
-    --primary: 0 72% 47%;
-    --primary-foreground: 40 60% 94%;
-    --accent: 42 80% 55%;
-    --accent-foreground: 0 0% 4%;
-    --ring: 0 72% 47%;
-    --spot-color: 0 78% 52%;
-    --border: 0 30% 16%;
-  }
 }
 
 @layer base {
@@ -241,6 +230,18 @@ li {
   50%,
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes boxsweep {
+  0% {
+    transform: translate(-12%, -8%);
+  }
+  50% {
+    transform: translate(28%, 30%);
+  }
+  100% {
+    transform: translate(-12%, -8%);
   }
 }
 .blink {

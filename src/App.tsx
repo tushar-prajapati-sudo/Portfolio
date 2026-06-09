@@ -2,13 +2,13 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { useSmoothScroll } from "@/hooks/use-smooth-scroll";
 import { CursorSpotlight } from "@/components/effects/CursorSpotlight";
 import { RobotStage } from "@/components/effects/RobotStage";
-import { SamuraiOverlay } from "@/components/effects/SamuraiOverlay";
 import { OrbitalNav } from "@/components/effects/OrbitalNav";
 import { Desktop } from "@/components/effects/Desktop";
 import {
   ActiveBackground,
   scrimClass,
   isLightBg,
+  BG_OPTIONS,
   type BgMode,
 } from "@/components/effects/backgrounds";
 import { BackgroundSwitcher } from "@/components/ui/background-switcher";
@@ -23,26 +23,22 @@ import { Contact } from "@/components/sections/Contact";
 export default function App() {
   useSmoothScroll();
 
-  const [bg, setBg] = useState<BgMode>(
-    () => (localStorage.getItem("bg") as BgMode) || "aurora"
-  );
+  const [bg, setBg] = useState<BgMode>(() => {
+    const saved = localStorage.getItem("bg") as BgMode | null;
+    return saved && BG_OPTIONS.some((o) => o.key === saved) ? saved : "stars";
+  });
   useEffect(() => {
     localStorage.setItem("bg", bg);
   }, [bg]);
 
   const light = isLightBg(bg);
-  const samurai = bg === "samurai";
-  // Light backgrounds force a dark spotlight; samurai uses its theme palette.
+  // Light backgrounds (e.g. shader lines) force a dark spotlight.
   const rootStyle: CSSProperties | undefined = light
     ? ({ "--spot-color": "0 0% 0%" } as CSSProperties)
     : undefined;
 
   return (
-    <div
-      className="relative min-h-screen text-foreground"
-      data-theme={samurai ? "samurai" : undefined}
-      style={rootStyle}
-    >
+    <div className="relative min-h-screen text-foreground" style={rootStyle}>
       {/* Only the active background is mounted (others unmount → no stacked
           WebGL contexts). */}
       <div className="fixed inset-0 -z-20">
@@ -53,7 +49,6 @@ export default function App() {
 
       {/* The robot: pinned, full-screen, zooms with scroll. */}
       <RobotStage />
-      {samurai && <SamuraiOverlay />}
 
       {/* CRT overlays — scanlines + vignette for the cybercafé/terminal feel. */}
       <div className="crt-scanlines pointer-events-none fixed inset-0 z-40" />

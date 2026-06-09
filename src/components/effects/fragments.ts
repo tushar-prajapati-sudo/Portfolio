@@ -1,130 +1,263 @@
+import type { ShaderSpec } from "@/components/effects/ShaderCanvas";
+
 /**
- * Fragment-shader bodies for the selectable backgrounds. Each is remixed from
- * the referenced 21st.dev component (most of which use three.js) into a single
- * lightweight raw-WebGL pass, recolored to the theme. They share HEADER's
- * uniforms (u_time, u_resolution, u_mouse) and noise helpers.
+ * The real fragment shaders from the referenced 21st.dev components, ported to
+ * WebGL1 (float loops → int, `tanh` polyfilled, `#version 300 es` removed,
+ * fixed uniforms inlined). The visuals match the originals; we just run the
+ * fragment through one raw-WebGL quad instead of three.js.
  */
 
-// aliimam/shader-animation — concentric amber ripple.
-export const RIPPLE = `
-void main(){
-  vec2 p=(gl_FragCoord.xy-0.5*u_resolution)/u_resolution.y;
-  float r=length(p);
-  float a=0.5+0.5*sin(r*26.0 - u_time*1.7);
-  vec3 amber=vec3(1.0,0.62,0.16);
-  vec3 col=vec3(0.02,0.02,0.03);
-  col += amber*pow(a,2.0)*max(0.0,0.55-r)*1.4;
-  col += amber*exp(-r*2.6)*0.25;
-  col *= smoothstep(1.25,0.1,r);
-  gl_FragColor=vec4(max(col,0.0),1.0);
+// aliimam/shader-animation — concentric line rings.
+const RINGS = `precision highp float;
+uniform vec2 resolution;
+uniform float time;
+void main(void){
+  vec2 uv = (gl_FragCoord.xy * 2.0 - resolution.xy) / min(resolution.x, resolution.y);
+  float t = time*0.05;
+  float lineWidth = 0.002;
+  vec3 color = vec3(0.0);
+  for(int j = 0; j < 3; j++){
+    for(int i=0; i < 5; i++){
+      color[j] += lineWidth*float(i*i) / abs(fract(t - 0.01*float(j)+float(i)*0.01)*5.0 - length(uv) + mod(uv.x+uv.y, 0.2));
+    }
+  }
+  gl_FragColor = vec4(color[0],color[1],color[2],1.0);
 }`;
 
-// thanh/animated-shader-background — falling stars (layers scroll downward).
-export const STARS = `
+// thanh/animated-shader-background — flowing aurora ("falling stars" set).
+const STARS = `precision highp float;
+uniform float iTime;
+uniform vec2 iResolution;
+#define NUM_OCTAVES 3
+vec4 tanh4(vec4 x){ vec4 e = exp(min(x, 8.0) * 2.0); return (e - 1.0) / (e + 1.0); }
+float rand(vec2 n){ return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453); }
+float noise(vec2 p){
+  vec2 ip = floor(p); vec2 u = fract(p); u = u*u*(3.0-2.0*u);
+  float res = mix(mix(rand(ip), rand(ip + vec2(1.0,0.0)), u.x), mix(rand(ip + vec2(0.0,1.0)), rand(ip + vec2(1.0,1.0)), u.x), u.y);
+  return res*res;
+}
+float fbm(vec2 x){
+  float v = 0.0; float a = 0.3; vec2 shift = vec2(100.0);
+  mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+  for (int i = 0; i < NUM_OCTAVES; ++i){ v += a*noise(x); x = rot*x*2.0 + shift; a *= 0.4; }
+  return v;
+}
 void main(){
-  vec2 uv=gl_FragCoord.xy/u_resolution;
-  vec3 col=vec3(0.01,0.012,0.025);
-  for(int i=0;i<3;i++){
-    float fi=float(i);
-    vec2 g=uv*vec2(7.0+fi*6.0, 14.0+fi*8.0);
-    g.y += u_time*(2.0+fi*1.4);
-    vec2 id=floor(g); vec2 f=fract(g);
-    float h=hash(id+fi*37.0);
-    float star=step(0.965,h);
-    float d=length(f-0.5);
-    float tw=0.5+0.5*sin(u_time*3.0+h*40.0);
-    col += vec3(1.0,0.72,0.32)*star*smoothstep(0.45,0.0,d)*tw*(0.7/(fi+1.0));
+  vec2 shake = vec2(sin(iTime*1.2)*0.005, cos(iTime*2.1)*0.005);
+  vec2 p = ((gl_FragCoord.xy + shake*iResolution.xy) - iResolution.xy*0.5) / iResolution.y * mat2(6.0,-4.0,4.0,6.0);
+  vec2 v; vec4 o = vec4(0.0);
+  float f = 2.0 + fbm(p + vec2(iTime*5.0, 0.0))*0.5;
+  for (int ii = 0; ii < 35; ii++){
+    float i = float(ii);
+    v = p + cos(i*i + (iTime + p.x*0.08)*0.025 + i*vec2(13.0,11.0))*3.5 + vec2(sin(iTime*3.0+i)*0.003, cos(iTime*3.5-i)*0.003);
+    float tailNoise = fbm(v + vec2(iTime*0.5, i))*0.3*(1.0 - (i/35.0));
+    vec4 auroraColors = vec4(0.1+0.3*sin(i*0.2+iTime*0.4), 0.3+0.5*cos(i*0.3+iTime*0.5), 0.7+0.3*sin(i*0.4+iTime*0.3), 1.0);
+    vec4 currentContribution = auroraColors * exp(sin(i*i + iTime*0.8)) / length(max(v, vec2(v.x*f*0.015, v.y*1.5)));
+    float thinnessFactor = smoothstep(0.0, 1.0, i/35.0)*0.6;
+    o += currentContribution*(1.0 + tailNoise*0.8)*thinnessFactor;
+  }
+  o = tanh4(pow(o/100.0, vec4(1.6)));
+  gl_FragColor = o*1.5;
+}`;
+
+// aliimam/web-gl-shader — RGB-split sine wave.
+const WAVE = `precision highp float;
+uniform vec2 resolution;
+uniform float time;
+const float xScale = 1.0;
+const float yScale = 0.5;
+const float distortion = 0.05;
+void main(){
+  vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
+  float d = length(p) * distortion;
+  float rx = p.x*(1.0+d); float gx = p.x; float bx = p.x*(1.0-d);
+  float r = 0.05 / abs(p.y + sin((rx+time)*xScale)*yScale);
+  float g = 0.05 / abs(p.y + sin((gx+time)*xScale)*yScale);
+  float b = 0.05 / abs(p.y + sin((bx+time)*xScale)*yScale);
+  gl_FragColor = vec4(r, g, b, 1.0);
+}`;
+
+// thanh/shader-background — warped plasma lines over a grid.
+const PLASMA = `precision highp float;
+uniform vec2 iResolution;
+uniform float iTime;
+const float overallSpeed = 0.2;
+const float gridSmoothWidth = 0.015;
+const float axisWidth = 0.05;
+const float majorLineWidth = 0.025;
+const float minorLineWidth = 0.0125;
+const float majorLineFrequency = 5.0;
+const float minorLineFrequency = 1.0;
+const float scale = 5.0;
+const vec4 lineColor = vec4(0.4, 0.2, 0.8, 1.0);
+const float minLineWidth = 0.01;
+const float maxLineWidth = 0.2;
+const float lineSpeed = 1.0 * overallSpeed;
+const float lineAmplitude = 1.0;
+const float lineFrequency = 0.2;
+const float warpSpeed = 0.2 * overallSpeed;
+const float warpFrequency = 0.5;
+const float warpAmplitude = 1.0;
+const float offsetFrequency = 0.5;
+const float offsetSpeed = 1.33 * overallSpeed;
+const float minOffsetSpread = 0.6;
+const float maxOffsetSpread = 2.0;
+const int linesPerGroup = 16;
+#define drawCrispLine(pos, halfWidth, t) smoothstep(halfWidth + gridSmoothWidth, halfWidth, abs(pos - (t)))
+#define drawSmoothLine(pos, halfWidth, t) smoothstep(halfWidth, 0.0, abs(pos - (t)))
+#define drawCircle(pos, radius, coord) smoothstep(radius + gridSmoothWidth, radius, length(coord - (pos)))
+float random(float t){ return (cos(t) + cos(t*1.3+1.3) + cos(t*1.4+1.4)) / 3.0; }
+float getPlasmaY(float x, float horizontalFade, float offset){ return random(x*lineFrequency + iTime*lineSpeed)*horizontalFade*lineAmplitude + offset; }
+void main(){
+  vec2 fragCoord = gl_FragCoord.xy;
+  vec2 uv = fragCoord.xy / iResolution.xy;
+  vec2 space = (fragCoord - iResolution.xy/2.0) / iResolution.x * 2.0 * scale;
+  float horizontalFade = 1.0 - (cos(uv.x*6.28)*0.5+0.5);
+  float verticalFade = 1.0 - (cos(uv.y*6.28)*0.5+0.5);
+  space.y += random(space.x*warpFrequency + iTime*warpSpeed)*warpAmplitude*(0.5+horizontalFade);
+  space.x += random(space.y*warpFrequency + iTime*warpSpeed + 2.0)*warpAmplitude*horizontalFade;
+  vec4 lines = vec4(0.0);
+  vec4 bgColor1 = vec4(0.1, 0.1, 0.3, 1.0);
+  vec4 bgColor2 = vec4(0.3, 0.1, 0.5, 1.0);
+  for(int l = 0; l < linesPerGroup; l++){
+    float normalizedLineIndex = float(l) / float(linesPerGroup);
+    float offsetTime = iTime*offsetSpeed;
+    float offsetPosition = float(l) + space.x*offsetFrequency;
+    float rand = random(offsetPosition + offsetTime)*0.5+0.5;
+    float halfWidth = mix(minLineWidth, maxLineWidth, rand*horizontalFade)/2.0;
+    float offset = random(offsetPosition + offsetTime*(1.0+normalizedLineIndex))*mix(minOffsetSpread, maxOffsetSpread, horizontalFade);
+    float linePosition = getPlasmaY(space.x, horizontalFade, offset);
+    float line = drawSmoothLine(linePosition, halfWidth, space.y)/2.0 + drawCrispLine(linePosition, halfWidth*0.15, space.y);
+    float circleX = mod(float(l) + iTime*lineSpeed, 25.0) - 12.0;
+    vec2 circlePosition = vec2(circleX, getPlasmaY(circleX, horizontalFade, offset));
+    float circle = drawCircle(circlePosition, 0.01, space)*4.0;
+    line = line + circle;
+    lines += line*lineColor*rand;
+  }
+  vec4 fragColor = mix(bgColor1, bgColor2, uv.x);
+  fragColor *= verticalFade;
+  fragColor.a = 1.0;
+  fragColor += lines;
+  gl_FragColor = fragColor;
+}`;
+
+// aliimam/shader-lines — light mosaic lines (pairs with a dark spotlight).
+const LINES = `precision highp float;
+uniform vec2 resolution;
+uniform float time;
+float random(in float x){ return fract(sin(x)*1e4); }
+float random(vec2 st){ return fract(sin(dot(st.xy, vec2(12.9898,78.233)))*43758.5453123); }
+void main(void){
+  vec2 uv = (gl_FragCoord.xy*2.0 - resolution.xy) / min(resolution.x, resolution.y);
+  vec2 fMosaicScal = vec2(4.0, 2.0);
+  vec2 vScreenSize = vec2(256.0, 256.0);
+  uv.x = floor(uv.x * vScreenSize.x / fMosaicScal.x) / (vScreenSize.x / fMosaicScal.x);
+  uv.y = floor(uv.y * vScreenSize.y / fMosaicScal.y) / (vScreenSize.y / fMosaicScal.y);
+  float t = time*0.06 + random(uv.x)*0.4;
+  float lineWidth = 0.0008;
+  vec3 color = vec3(0.0);
+  for(int j = 0; j < 3; j++){
+    for(int i = 0; i < 5; i++){
+      color[j] += lineWidth*float(i*i) / abs(fract(t - 0.01*float(j)+float(i)*0.01)*1.0 - length(uv));
+    }
+  }
+  // Inverted to a light field with darker mosaic lines (pairs with a dark spotlight).
+  vec3 ln = vec3(color[2], color[1], color[0]);
+  vec3 col = vec3(0.90, 0.90, 0.93) - ln*1.4;
+  gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+}`;
+
+// Scottclayton3d/shader-animation — palette fractal with gradient overlay.
+const PRISM = `precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform vec2 u_mouse;
+vec3 palette(float t){
+  vec3 a = vec3(0.5); vec3 b = vec3(0.5); vec3 c = vec3(1.0); vec3 d = vec3(0.263, 0.416, 0.557);
+  return a + b*cos(6.28318*(c*t+d));
+}
+void main(){
+  vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+  vec2 uv0 = uv;
+  uv = uv*2.0 - 1.0;
+  uv.x *= u_resolution.x / u_resolution.y;
+  float d = length(uv);
+  vec3 col = vec3(0.0);
+  for(int ii = 0; ii < 4; ii++){
+    float i = float(ii);
+    uv = fract(uv*1.5) - 0.5;
+    d = length(uv)*exp(-length(uv0));
+    vec3 color = palette(length(uv0) + i*0.4 + u_time*0.01);
+    d = sin(d*4.0 + u_time)/36.0;
+    d = pow(0.005/d, 1.5);
+    vec2 mouseEffect = u_mouse - uv0;
+    float mouseDist = length(mouseEffect);
+    d *= 1.0 + sin(mouseDist*10.0 - u_time*2.0)*0.1;
+    col += color*d;
+  }
+  float wave = sin(uv0.x*2.0 + u_time)*0.01;
+  col += vec3(wave);
+  vec3 gradient1 = vec3(0.1, 0.2, 0.5);
+  vec3 gradient2 = vec3(0.9, 0.1, 0.4);
+  vec3 gradientMix = mix(gradient1, gradient2, uv0.y + sin(u_time)*0.2);
+  col = mix(col, gradientMix, 0.3);
+  gl_FragColor = vec4(col, 1.0);
+}`;
+
+// ravikatiyar/animated-shader-hero (Matthias Hurrle) — space clouds + streaks.
+const COMETS = `precision highp float;
+uniform vec2 resolution;
+uniform float time;
+#define FC gl_FragCoord.xy
+#define T time
+#define R resolution
+#define MN min(R.x,R.y)
+float rnd(vec2 p){ p=fract(p*vec2(12.9898,78.233)); p+=dot(p,p+34.56); return fract(p.x*p.y); }
+float noise(in vec2 p){
+  vec2 i=floor(p), f=fract(p), u=f*f*(3.0-2.0*f);
+  float a=rnd(i), b=rnd(i+vec2(1,0)), c=rnd(i+vec2(0,1)), d=rnd(i+1.0);
+  return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
+}
+float fbm(vec2 p){
+  float t=0.0, a=1.0; mat2 m=mat2(1.0,-0.5,0.2,1.2);
+  for (int i=0; i<5; i++){ t+=a*noise(p); p*=2.0*m; a*=0.5; }
+  return t;
+}
+float clouds(vec2 p){
+  float d=1.0, t=0.0;
+  for (int ii=0; ii<3; ii++){
+    float i=float(ii);
+    float a=d*fbm(i*10.0 + p.x*0.2 + 0.2*(1.0+i)*p.y + d + i*i + p);
+    t=mix(t,d,a); d=a; p*=2.0/(i+1.0);
+  }
+  return t;
+}
+void main(void){
+  vec2 uv=(FC-0.5*R)/MN, st=uv*vec2(2,1);
+  vec3 col=vec3(0);
+  float bg=clouds(vec2(st.x+T*0.5, -st.y));
+  uv*=1.0-0.3*(sin(T*0.2)*0.5+0.5);
+  for (int ii=1; ii<12; ii++){
+    float i=float(ii);
+    uv+=0.1*cos(i*vec2(0.1+0.01*i, 0.8)+i*i+T*0.5+0.1*uv.x);
+    vec2 p=uv;
+    float d=length(p);
+    col+=0.00125/d*(cos(sin(i)*vec3(1,2,3))+1.0);
+    float b=noise(i+p+bg*1.731);
+    col+=0.002*b/length(max(p, vec2(b*p.x*0.02, p.y)));
+    col=mix(col, vec3(bg*0.25, bg*0.137, bg*0.05), d);
   }
   gl_FragColor=vec4(col,1.0);
 }`;
 
-// aliimam/web-gl-shader — flowing amber wave.
-export const WAVE = `
-void main(){
-  vec2 p=(gl_FragCoord.xy-0.5*u_resolution)/u_resolution.y;
-  float w=0.0;
-  for(int i=0;i<4;i++){ float fi=float(i);
-    w += sin(p.x*(2.5+fi*2.0)+u_time*(0.8+fi*0.3)+fi)*(0.13/(fi+1.0)); }
-  float d=abs(p.y-w);
-  vec3 amber=vec3(1.0,0.6,0.15);
-  vec3 col=vec3(0.02,0.02,0.045);
-  col += amber*smoothstep(0.28,0.0,d)*0.9;
-  col += amber*0.10*smoothstep(0.5,0.0,abs(p.y-w)-0.1);
-  col *= smoothstep(1.3,0.15,length(p));
-  gl_FragColor=vec4(col,1.0);
-}`;
+export const SHADERS = {
+  rings: { fragment: RINGS, res: "resolution", time: "time", timeScale: 3 },
+  stars: { fragment: STARS, res: "iResolution", time: "iTime", timeScale: 1 },
+  wave: { fragment: WAVE, res: "resolution", time: "time", timeScale: 0.6 },
+  plasma: { fragment: PLASMA, res: "iResolution", time: "iTime", timeScale: 1 },
+  lines: { fragment: LINES, res: "resolution", time: "time", timeScale: 3 },
+  prism: { fragment: PRISM, res: "u_resolution", time: "u_time", timeScale: 1 },
+  comets: { fragment: COMETS, res: "resolution", time: "time", timeScale: 1 },
+} satisfies Record<string, ShaderSpec>;
 
-// thanh/shader-background — domain-warped nebula.
-export const NEBULA = `
-void main(){
-  vec2 p=(gl_FragCoord.xy-0.5*u_resolution)/u_resolution.y;
-  float t=u_time*0.08;
-  vec2 q=vec2(fbm(p*2.0+t), fbm(p*2.0-t+3.1));
-  float n=fbm(p*3.0+q*2.0+t);
-  vec3 a=vec3(1.0,0.55,0.12), b=vec3(0.18,0.05,0.32);
-  vec3 col=mix(b,a,smoothstep(0.2,0.92,n))*(0.32+0.55*n);
-  col *= smoothstep(1.35,0.2,length(p));
-  gl_FragColor=vec4(max(col,0.0),1.0);
-}`;
-
-// aliimam/shader-lines — LIGHT background with darker weaving lines.
-// (Pair with a dark spotlight.)
-export const LINES = `
-void main(){
-  vec2 uv=gl_FragCoord.xy/u_resolution;
-  vec3 bg=vec3(0.93,0.91,0.86);
-  float l=0.0;
-  for(int i=0;i<6;i++){ float fi=float(i);
-    float ph=uv.x*1.6 + fi*0.18 + sin(u_time*0.5+fi*1.3)*0.12;
-    float d=abs(fract(uv.y*3.2 - ph - u_time*0.04)-0.5);
-    l += smoothstep(0.02,0.0,d-0.47);
-  }
-  vec3 col=bg - vec3(0.45,0.5,0.55)*l*0.5;
-  col = mix(col, vec3(0.95,0.62,0.2), l*0.18);
-  gl_FragColor=vec4(col,1.0);
-}`;
-
-// ravikatiyar/animated-shader-hero — horizontally moving comets.
-export const COMETS = `
-void main(){
-  vec2 uv=gl_FragCoord.xy/u_resolution;
-  float aspect=u_resolution.x/u_resolution.y;
-  vec3 col=vec3(0.01,0.012,0.03);
-  for(int i=0;i<7;i++){ float fi=float(i);
-    float lane=hash(vec2(fi,1.0));
-    float speed=0.18+hash(vec2(fi,2.0))*0.4;
-    float x=fract(u_time*speed + hash(vec2(fi,3.0)));
-    float dy=abs(uv.y-lane);
-    float head=smoothstep(0.012,0.0,length(vec2((uv.x-x)*aspect, dy)));
-    float behind=step(uv.x,x);
-    float tail=smoothstep(0.22,0.0,(x-uv.x))*smoothstep(0.012,0.0,dy)*behind;
-    col += vec3(1.0,0.62,0.22)*(head*1.2 + tail*0.6);
-  }
-  gl_FragColor=vec4(col,1.0);
-}`;
-
-// Scottclayton3d/shader-animation — interfering procedural gradient.
-export const PRISM = `
-void main(){
-  vec2 uv=gl_FragCoord.xy/u_resolution;
-  float t=u_time*0.22;
-  float v=sin(uv.x*6.0+t)+sin(uv.y*6.0+t*1.3)+sin((uv.x+uv.y)*5.0+t*0.7)+sin(length(uv-0.5)*12.0-t);
-  v*=0.25;
-  vec3 a=vec3(1.0,0.5,0.1), b=vec3(0.12,0.08,0.28);
-  vec3 col=mix(b,a,0.5+0.5*v)*0.55;
-  gl_FragColor=vec4(col,1.0);
-}`;
-
-// Samurai theme background — crimson ink/smoke.
-export const SAMURAI_BG = `
-void main(){
-  vec2 p=(gl_FragCoord.xy-0.5*u_resolution)/u_resolution.y;
-  float t=u_time*0.06;
-  vec2 q=vec2(fbm(p*1.8+t), fbm(p*1.8-t+5.0));
-  float n=fbm(p*2.6+q*2.2+t);
-  vec3 crimson=vec3(0.62,0.06,0.08), ink=vec3(0.03,0.01,0.02), gold=vec3(0.85,0.6,0.2);
-  vec3 col=mix(ink,crimson,smoothstep(0.25,0.85,n))*(0.4+0.5*n);
-  col += gold*pow(max(0.0,n-0.7),2.0)*0.6;
-  col *= smoothstep(1.4,0.15,length(p));
-  gl_FragColor=vec4(max(col,0.0),1.0);
-}`;
+export type ShaderKey = keyof typeof SHADERS;

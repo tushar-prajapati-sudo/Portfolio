@@ -25,8 +25,6 @@ export function Hero() {
         className="-top-40 left-0 md:-top-24 md:left-1/4"
         fill="hsl(var(--spot-color))"
       />
-      <Spotlight className="top-10 right-0 md:top-0 md:right-24" fill="#3B6EF5" />
-      <div className="pointer-events-none absolute bottom-[8%] left-1/2 h-[36vh] w-[60vw] -translate-x-1/2 rounded-full bg-[#3b6ef5]/10 blur-[130px]" />
 
       {/* Terminal status chip */}
       <motion.span
