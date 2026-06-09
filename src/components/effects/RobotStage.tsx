@@ -20,7 +20,7 @@ const ROBOT_SCENE =
  * toward the cursor. Behind content (z-0); interactive wherever content
  * doesn't cover it.
  */
-export function RobotStage() {
+export function RobotStage({ onReady }: { onReady?: () => void }) {
   const { scrollYProgress } = useScroll();
 
   // Aggressive zoom — smoothed by a soft spring.
@@ -56,7 +56,7 @@ export function RobotStage() {
         style={{ scale, x: px, y }}
         className="absolute inset-y-0 left-0 right-0 will-change-transform md:left-[32%]"
       >
-        <SplineScene scene={ROBOT_SCENE} className="h-full w-full" />
+        <SplineScene scene={ROBOT_SCENE} className="h-full w-full" onLoad={onReady} />
       </motion.div>
     </div>
   );
