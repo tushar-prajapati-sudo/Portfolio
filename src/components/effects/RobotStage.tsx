@@ -24,10 +24,12 @@ export function RobotStage({ onReady }: { onReady?: () => void }) {
   const { scrollYProgress } = useScroll();
 
   // Aggressive zoom — smoothed by a soft spring.
-  const scaleRaw = useTransform(scrollYProgress, [0, 0.5, 1], [1.15, 2.0, 1.4]);
+  const scaleRaw = useTransform(scrollYProgress, [0, 0.5, 1], [1.15, 2.3, 1.5]);
   const scale = useSpring(scaleRaw, { stiffness: 55, damping: 22, mass: 0.6 });
 
-  const yScrollRaw = useTransform(scrollYProgress, [0, 0.5, 1], [0, -70, 0]);
+  // Push the robot DOWN as it zooms so the (top-anchored) head settles toward
+  // the centre of the frame instead of climbing off the top edge.
+  const yScrollRaw = useTransform(scrollYProgress, [0, 0.5, 1], [0, 170, 30]);
   const yScroll = useSpring(yScrollRaw, { stiffness: 55, damping: 22 });
 
   // Cursor parallax.
@@ -53,8 +55,8 @@ export function RobotStage({ onReady }: { onReady?: () => void }) {
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
       <motion.div
-        style={{ scale, x: px, y }}
-        className="absolute inset-y-0 left-0 right-0 will-change-transform md:left-[32%]"
+        style={{ scale, x: px, y, transformOrigin: "50% 22%" }}
+        className="absolute inset-y-0 left-0 right-0 will-change-transform md:left-[40%] lg:left-[48%]"
       >
         <SplineScene scene={ROBOT_SCENE} className="h-full w-full" onLoad={onReady} />
       </motion.div>

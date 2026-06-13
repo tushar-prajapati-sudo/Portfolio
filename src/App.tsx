@@ -4,7 +4,7 @@ import { useSmoothScroll } from "@/hooks/use-smooth-scroll";
 import { CursorSpotlight } from "@/components/effects/CursorSpotlight";
 import { RobotStage } from "@/components/effects/RobotStage";
 import { LoadingScreen } from "@/components/effects/LoadingScreen";
-import { OrbitalNav } from "@/components/effects/OrbitalNav";
+import { NavBar } from "@/components/ui/nav-bar";
 import { Desktop } from "@/components/effects/Desktop";
 import {
   ActiveBackground,
@@ -73,8 +73,8 @@ export default function App() {
 
       <CursorSpotlight light={light} />
 
-      {/* Quarter-disk navigation (top-right); floating apps open windows. */}
-      <OrbitalNav />
+      {/* Primary navigation — floating pill, fixed top-center. */}
+      <NavBar />
       <Desktop />
       <BackgroundSwitcher value={bg} onChange={setBg} />
 

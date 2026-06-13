@@ -1,0 +1,16 @@
+import { chromium } from "playwright";
+const b = await chromium.launch();
+const ctx = await b.newContext({ viewport:{width:1440,height:900}});
+const p = await ctx.newPage();
+await p.goto("http://localhost:5173/", { waitUntil: "domcontentloaded" });
+await p.waitForTimeout(300);
+await p.screenshot({ path: "/tmp/shots/loader_early.png" });
+const earlyHasLoader = (await p.getByText("booting cybercafe").count())>0;
+await p.waitForTimeout(7000);
+const bg = await p.evaluate(()=>localStorage.getItem("bg"));
+const lateHasLoader = (await p.getByText("booting cybercafe").count())>0;
+await p.screenshot({ path: "/tmp/shots/loader_late.png" });
+console.log("loader shown early:", earlyHasLoader);
+console.log("default bg:", bg);
+console.log("loader gone after load:", !lateHasLoader);
+await b.close();
