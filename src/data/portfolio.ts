@@ -30,7 +30,7 @@ export const profile = {
       "that quietly refuses to fall over.",
   ],
   location: "India", // TODO: confirm / refine
-  email: "flutekey0@gmail.com", // TODO: use a public-facing email if you prefer
+  email: "tusharprt5@gmail.com", // TODO: use a public-facing email if you prefer
   // Highlight stats shown as small badges in the hero / about.
   stats: [
     { label: "Years coding", value: "3+" }, // TODO: adjust
@@ -104,6 +104,9 @@ export type Project = {
   // Optional image path (drop screenshots in /public). Falls back to a gradient.
   image?: string;
   featured?: boolean;
+  year?: string;
+  highlights?: string[]; // delivered features / achievements
+  metrics?: { label: string; value: string }[]; // headline numbers
 };
 
 // TODO: replace these with your real projects (title, blurb, links, screenshots).
@@ -196,3 +199,177 @@ export const journey: TimelineNode[] = [
     relatedIds: [3],
   },
 ];
+
+// ── Live projects (embedded as iframes in the Projects section) ──────────
+export type LiveProject = {
+  title: string;
+  url: string; // must allow framing (no X-Frame-Options / frame-ancestors)
+  description: string;
+  tags: string[];
+  repo?: string;
+};
+
+export const liveProjects: LiveProject[] = [
+  {
+    title: "Ossam Hospital",
+    url: "https://ossamhospital.com/",
+    description:
+      "A clean, responsive web presence for Ossam Hospital — services, " +
+      "departments and patient-facing information, built to load fast.",
+    tags: ["Frontend", "Responsive", "UI"], // TODO: confirm real stack
+  },
+  {
+    title: "Fresh Fit Fuel",
+    url: "https://fresh-fit-fuel-eight.vercel.app/",
+    description:
+      "An interactive, mobile-first menu for WON Diet Cafe — browse dishes, " +
+      "build a cart, and check out through a pre-filled WhatsApp message. " +
+      "Headlined by a draggable low-poly 3D food hero.",
+    tags: ["React", "Vite", "Three.js", "Tailwind", "Framer Motion"],
+    repo: "https://github.com/rootnlogs/fresh-fit-fuel",
+  },
+];
+
+// ── Plan tree (drives the agent-plan component for ongoing work) ─────────
+export type PlanStatus =
+  | "completed"
+  | "in-progress"
+  | "pending"
+  | "need-help"
+  | "failed";
+
+export type PlanSubtask = {
+  id: string;
+  title: string;
+  description: string;
+  status: PlanStatus;
+  tools?: string[]; // repurposed as "stack" badges
+};
+
+export type PlanTask = {
+  id: string;
+  title: string;
+  description: string;
+  status: PlanStatus;
+  dependencies: string[];
+  subtasks: PlanSubtask[];
+};
+
+export const qspace = {
+  name: "QSpace",
+  tagline:
+    "A premium real-time collaborative platform — shared rooms, watch " +
+    "parties, A/V conferencing and Three.js-powered 3D spaces, engineered " +
+    "for 2,000+ concurrent users and horizontal scale.",
+  repo: "", // TODO: add QSpace repo when public
+  // Phased build plan — expand a phase to see its work.
+  phases: [
+    {
+      id: "1",
+      title: "Architecture & Foundations",
+      description:
+        "Turborepo + pnpm monorepo and the shared groundwork every later " +
+        "phase builds on.",
+      status: "completed",
+      dependencies: [],
+      subtasks: [
+        {
+          id: "1.1",
+          title: "Turborepo + pnpm monorepo",
+          description:
+            "Workspace layout, task pipeline and caching across apps and packages.",
+          status: "completed",
+          tools: ["Turborepo", "pnpm"],
+        },
+        {
+          id: "1.2",
+          title: "Shared packages & config",
+          description:
+            "Centralised tsconfig, ESLint/Prettier and a shared UI package.",
+          status: "completed",
+          tools: ["TypeScript", "ESLint"],
+        },
+        {
+          id: "1.3",
+          title: "Dockerised infrastructure",
+          description:
+            "Local stack for Postgres and Redis, ready to mirror in prod.",
+          status: "completed",
+          tools: ["Docker", "Postgres", "Redis"],
+        },
+      ],
+    },
+    {
+      id: "2",
+      title: "Real-Time Core",
+      description:
+        "The live backbone — connections, presence and rooms built to scale " +
+        "horizontally.",
+      status: "in-progress",
+      dependencies: [],
+      subtasks: [
+        {
+          id: "2.1",
+          title: "WebSocket gateway",
+          description: "Authenticated socket layer with reconnection and heartbeats.",
+          status: "in-progress",
+          tools: ["WebSockets", "Node.js"],
+        },
+        {
+          id: "2.2",
+          title: "Presence & rooms",
+          description: "Shared spaces, membership and live presence indicators.",
+          status: "pending",
+          tools: ["Redis"],
+        },
+        {
+          id: "2.3",
+          title: "Horizontal fan-out",
+          description:
+            "Redis pub/sub so events span instances toward 2,000+ concurrent users.",
+          status: "pending",
+          tools: ["Redis", "Pub/Sub"],
+        },
+      ],
+    },
+    {
+      id: "3",
+      title: "Media & Conferencing",
+      description: "Audio, video and shared media experiences.",
+      status: "pending",
+      dependencies: [],
+      subtasks: [
+        {
+          id: "3.1",
+          title: "A/V conferencing",
+          description: "WebRTC with an SFU for multi-party audio and video.",
+          status: "pending",
+          tools: ["WebRTC", "SFU"],
+        },
+        {
+          id: "3.2",
+          title: "Watch parties",
+          description: "Synced playback so a room watches together in lockstep.",
+          status: "pending",
+          tools: ["WebSockets"],
+        },
+      ],
+    },
+    {
+      id: "4",
+      title: "Shared 3D Spaces",
+      description: "Three.js-powered rooms you can inhabit together.",
+      status: "pending",
+      dependencies: [],
+      subtasks: [
+        {
+          id: "4.1",
+          title: "Three.js shared scenes",
+          description: "Real-time synced 3D environments with presence and avatars.",
+          status: "pending",
+          tools: ["Three.js", "WebGL"],
+        },
+      ],
+    },
+  ] as PlanTask[],
+};

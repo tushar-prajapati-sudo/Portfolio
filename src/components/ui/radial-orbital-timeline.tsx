@@ -73,7 +73,7 @@ export function RadialOrbitalTimeline({ nodes }: { nodes: TimelineNode[] }) {
   return (
     <div
       ref={containerRef}
-      className="relative flex h-[34rem] w-full items-center justify-center overflow-hidden"
+      className="relative flex h-[40rem] w-full items-center justify-center overflow-hidden"
       onClick={(e) => {
         if (e.target === containerRef.current) {
           setExpanded(null);
@@ -93,7 +93,7 @@ export function RadialOrbitalTimeline({ nodes }: { nodes: TimelineNode[] }) {
 
         {/* Orbit rings. */}
         <div
-          className="absolute rounded-full border border-border/60"
+          className="absolute rounded-full border border-dashed border-primary/25"
           style={{ width: radius * 2, height: radius * 2 }}
         />
 
@@ -102,7 +102,8 @@ export function RadialOrbitalTimeline({ nodes }: { nodes: TimelineNode[] }) {
           const Icon = KIND_ICON[node.kind];
           const isExpanded = expanded === node.id;
           const isPulsing = pulse[node.id];
-          const depth = 0.6 + (pos.z + 1) * 0.2; // 0.6 → 1.0
+          const depth = 0.82 + (pos.z + 1) * 0.09; // 0.82 → 1.0
+          const openUp = pos.y >= 0; // lower-half nodes open their card upward
 
           return (
             <div
@@ -125,7 +126,7 @@ export function RadialOrbitalTimeline({ nodes }: { nodes: TimelineNode[] }) {
                   "group relative flex h-12 w-12 items-center justify-center rounded-full border transition-all duration-300",
                   isExpanded
                     ? "scale-125 border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card text-foreground hover:border-primary hover:text-primary",
+                    : "border-primary/45 bg-card text-primary shadow-[0_0_18px_hsl(var(--primary)/0.20)] hover:border-primary hover:bg-primary/10",
                   isPulsing && "border-primary/80"
                 )}
               >
@@ -133,14 +134,21 @@ export function RadialOrbitalTimeline({ nodes }: { nodes: TimelineNode[] }) {
                   <span className="absolute inset-0 animate-ping rounded-full bg-primary/30" />
                 )}
                 <Icon className="h-5 w-5" />
-                <span className="pointer-events-none absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  {node.date}
-                </span>
+                {!isExpanded && (
+                  <span className="pointer-events-none absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] uppercase tracking-widest text-foreground/70">
+                    {node.date}
+                  </span>
+                )}
               </button>
 
               {/* Expanded detail card. */}
               {isExpanded && (
-                <div className="absolute left-1/2 top-16 w-72 -translate-x-1/2 rounded-2xl border border-border bg-card/95 p-4 text-left shadow-2xl backdrop-blur">
+                <div
+                  className={cn(
+                    "absolute left-1/2 w-72 -translate-x-1/2 rounded-2xl border border-primary/30 bg-card/95 p-4 text-left shadow-2xl backdrop-blur",
+                    openUp ? "bottom-16" : "top-16"
+                  )}
+                >
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <span
                       className={cn(
