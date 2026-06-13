@@ -132,8 +132,8 @@ export function AgentPlan({ tasks }: { tasks: PlanTask[] }) {
   return (
     <div className="text-foreground">
       <LayoutGroup>
-        <div className="overflow-hidden p-2 sm:p-3">
-          <ul className="space-y-1 overflow-hidden">
+        <div className="overflow-hidden p-3 sm:p-5">
+          <ul className="space-y-1.5 overflow-hidden">
             {tasks.map((task, index) => {
               const isExpanded = expandedTasks.includes(task.id);
               const isCompleted = task.status === "completed";
@@ -148,27 +148,27 @@ export function AgentPlan({ tasks }: { tasks: PlanTask[] }) {
                 >
                   {/* Phase row */}
                   <motion.div
-                    className="group flex cursor-pointer items-center rounded-md px-3 py-2"
+                    className="group flex cursor-pointer items-center rounded-md px-3 py-3 sm:px-4"
                     whileHover={{
                       backgroundColor: "hsl(var(--primary) / 0.06)",
                       transition: { duration: 0.2 },
                     }}
                     onClick={() => toggleTask(task.id)}
                   >
-                    <span className="mr-2.5 flex-shrink-0">
-                      {statusIcon(task.status, "h-[18px] w-[18px]")}
+                    <span className="mr-3 flex-shrink-0">
+                      {statusIcon(task.status, "h-5 w-5")}
                     </span>
 
                     <div className="flex min-w-0 flex-grow items-center justify-between">
                       <span
-                        className={`truncate text-sm font-semibold ${
+                        className={`truncate text-base font-semibold sm:text-lg ${
                           isCompleted ? "text-muted-foreground" : "text-foreground"
                         }`}
                       >
                         {task.title}
                       </span>
 
-                      <div className="ml-2 flex flex-shrink-0 items-center gap-2 text-xs">
+                      <div className="ml-2 flex flex-shrink-0 items-center gap-2 text-[11px] sm:text-xs">
                         {task.dependencies.length > 0 &&
                           task.dependencies.map((dep, idx) => (
                             <span
@@ -203,7 +203,7 @@ export function AgentPlan({ tasks }: { tasks: PlanTask[] }) {
                         layout
                       >
                         {/* Dashed connector aligned with the phase icon. */}
-                        <div className="absolute bottom-0 left-[20px] top-0 border-l border-dashed border-primary/25" />
+                        <div className="absolute bottom-0 left-[22px] top-0 border-l border-dashed border-primary/25" />
                         <ul className="mb-1.5 ml-3 mr-2 mt-1 space-y-0.5">
                           {task.subtasks.map((subtask) => {
                             const key = `${task.id}-${subtask.id}`;
@@ -228,11 +228,11 @@ export function AgentPlan({ tasks }: { tasks: PlanTask[] }) {
                                   }}
                                   layout
                                 >
-                                  <span className="mr-2 flex-shrink-0">
-                                    {statusIcon(subtask.status, "h-3.5 w-3.5")}
+                                  <span className="mr-2.5 flex-shrink-0">
+                                    {statusIcon(subtask.status, "h-[18px] w-[18px]")}
                                   </span>
                                   <span
-                                    className={`text-sm ${
+                                    className={`text-base ${
                                       subtask.status === "completed"
                                         ? "text-muted-foreground"
                                         : "text-foreground/90"
@@ -245,7 +245,7 @@ export function AgentPlan({ tasks }: { tasks: PlanTask[] }) {
                                 <AnimatePresence mode="wait">
                                   {open && (
                                     <motion.div
-                                      className="ml-1.5 mt-1 overflow-hidden border-l border-dashed border-foreground/20 pl-5 text-xs text-muted-foreground"
+                                      className="ml-1.5 mt-1 overflow-hidden border-l border-dashed border-foreground/20 pl-5 text-sm text-muted-foreground"
                                       variants={subtaskDetailsVariants}
                                       initial="hidden"
                                       animate="visible"
@@ -262,7 +262,7 @@ export function AgentPlan({ tasks }: { tasks: PlanTask[] }) {
                                             {subtask.tools.map((tool, idx) => (
                                               <span
                                                 key={idx}
-                                                className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+                                                className="rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
                                               >
                                                 {tool}
                                               </span>

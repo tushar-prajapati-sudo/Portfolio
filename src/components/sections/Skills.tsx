@@ -23,7 +23,7 @@ export function Skills() {
               {group.items.map((item) => (
                 <li
                   key={item}
-                  className="rounded-none border border-white/10 bg-background/40 px-3 py-1 text-sm text-foreground/90 transition-colors hover:border-primary/60 hover:text-primary"
+                  className="rounded-none border border-white/10 bg-background/40 px-3 py-1.5 text-base text-foreground/90 transition-colors hover:border-primary/60 hover:text-primary"
                 >
                   {item}
                 </li>

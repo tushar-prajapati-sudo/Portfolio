@@ -21,20 +21,19 @@ export const profile = {
     "I build the web end to end — the quiet machinery underneath, and the pixels you actually touch.",
   // 2–3 sentence intro used in the About section.
   about: [
-    "I'm a full-stack developer with a soft spot for both ends of the wire — " +
-      "the resilient Node.js and Express services humming away in the dark, and " +
-      "the React and Next.js interfaces people actually meet.",
-    "Right now I'm building " +
-      "backend systems, AI-assisted tooling, and the occasional security review. " +
-      "I care about clean APIs, pages that load before you blink, and software " +
-      "that quietly refuses to fall over.",
+    "I'm a full-stack developer at Imarticus Learning (with a pre-placement " +
+      "offer), building systems that run at government scale — an offline-first " +
+      "LMS for 200K+ users, AI pipelines, and the security audits that keep them safe.",
+    "I work both ends of the wire: resilient Node.js services humming away in " +
+      "the dark, and the React and Next.js interfaces people actually meet. I care " +
+      "about clean APIs, 130ms responses, and software that quietly refuses to fall over.",
   ],
-  location: "India", // TODO: confirm / refine
-  email: "tusharprt5@gmail.com", // TODO: use a public-facing email if you prefer
+  location: "Noida, India",
+  email: "tusharprt5@gmail.com",
   // Highlight stats shown as small badges in the hero / about.
   stats: [
-    { label: "Years coding", value: "3+" }, // TODO: adjust
-    { label: "Projects shipped", value: "10+" }, // TODO: adjust
+    { label: "Users served", value: "200K+" },
+    { label: "Uptime", value: "99.97%" },
     { label: "Open to", value: "Work" },
   ],
 };
@@ -70,28 +69,50 @@ export const navLinks = [
 // Grouped tech — shown in the Skills section.
 export const skillGroups: { title: string; items: string[] }[] = [
   {
+    title: "Languages",
+    items: ["C++", "JavaScript", "TypeScript", "Python"],
+  },
+  {
     title: "Frontend",
-    items: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"],
+    items: [
+      "React.js",
+      "Next.js",
+      "Redux Toolkit",
+      "Tailwind CSS",
+      "Framer Motion",
+      "Three.js",
+      "AngularJS",
+    ],
   },
   {
     title: "Backend",
-    items: ["Node.js", "Express", "REST APIs", "WebSockets"],
+    items: [
+      "Node.js",
+      "Express.js",
+      "PHP",
+      "MongoDB",
+      "MySQL",
+      "PostgreSQL",
+      "REST APIs",
+      "WebSockets",
+      "WebRTC",
+    ],
   },
   {
-    title: "Data & Messaging",
-    items: ["MongoDB", "Redis", "RabbitMQ"],
+    title: "DevOps & Infra",
+    items: [
+      "AWS (S3 · EC2 · Lambda)",
+      "Docker",
+      "Redis",
+      "RabbitMQ",
+      "Turborepo",
+      "Vite",
+      "Linux",
+    ],
   },
   {
-    title: "Cloud & Tooling",
-    items: ["AWS (S3 · EC2 · Lambda)", "Docker", "Git", "Vite"],
-  },
-  {
-    title: "Languages",
-    items: ["JavaScript", "TypeScript", "Python", "Go"],
-  },
-  {
-    title: "Security",
-    items: ["VAPT", "OWASP Top 10", "Burp Suite"],
+    title: "Security & Tools",
+    items: ["Git", "Burp Suite", "Metasploit", "VAPT", "OWASP"],
   },
 ];
 
@@ -109,32 +130,65 @@ export type Project = {
   metrics?: { label: string; value: string }[]; // headline numbers
 };
 
-// TODO: replace these with your real projects (title, blurb, links, screenshots).
+// Case-study projects — rendered as project-pulse-tracker cards (and listed
+// in the terminal). The two live, embeddable builds live in `liveProjects`.
 export const projects: Project[] = [
   {
-    title: "Project One",
+    title: "SPIPA — Govt. LMS",
+    year: "2025",
     blurb:
-      "TODO: one or two sentences on what it does and what you built. Lead " +
-      "with the impact (users, speed, scale) not the to-do list.",
-    tags: ["Next.js", "Node.js", "MongoDB"],
-    href: "#",
-    repo: "#",
-    image: "/projects/project-one.png", // TODO: add screenshot
+      "An offline-first learning platform for the Sardar Patel Institute of " +
+      "Public Administration, deployed on a secure government LAN with zero " +
+      "cloud dependency — built to serve 200K+ concurrent users.",
+    tags: ["Node.js", "React", "MongoDB", "Redis", "RabbitMQ"],
     featured: true,
+    highlights: [
+      "Role-based access — Super Admin, Course Manager, Batch Operator",
+      "Bilingual UI (English / Gujarati)",
+      "Bulk CSV user import at 99.8% success",
+      "Facial + GPS attendance",
+      "Automated certificates at 250/min",
+    ],
+    metrics: [
+      { label: "Concurrent users", value: "200K+" },
+      { label: "Avg API", value: "130ms" },
+      { label: "Cache hit", value: "93%" },
+      { label: "Uptime", value: "99.97%" },
+    ],
   },
   {
-    title: "Project Two",
-    blurb: "TODO: short description of the second project.",
-    tags: ["React", "Express", "Redis"],
-    href: "#",
-    repo: "#",
+    title: "PMRC — PM Research Chair Portal",
+    year: "2025",
+    blurb:
+      "A full-stack portal for a Government of India flagship initiative — " +
+      "static pages, auth flows, dashboards for five roles, and dynamic " +
+      "application forms (RJSF), hardened through two VAPT audits.",
+    tags: ["Next.js", "Node.js", "MongoDB", "RJSF"],
+    href: "https://pmrc.education.gov.in/",
+    highlights: [
+      "Dashboards for 5 distinct roles",
+      "Dynamic application forms via RJSF",
+      "Cleared Stage-1 & Stage-2 VAPT audits",
+      "Resolved 29 vulns — IDOR, JWT bypass, brute-force OTP, clickjacking, priv-esc",
+    ],
+    metrics: [
+      { label: "Vulns closed", value: "29" },
+      { label: "Roles", value: "5" },
+    ],
   },
   {
-    title: "Project Three",
-    blurb: "TODO: short description of the third project.",
-    tags: ["Go", "AWS", "RabbitMQ"],
-    href: "#",
-    repo: "#",
+    title: "Full-Stack E-Commerce",
+    year: "2024",
+    blurb:
+      "A responsive e-commerce platform with JWT auth, Cloudinary media, " +
+      "PayPal checkout, and an admin dashboard with ApexCharts analytics.",
+    tags: ["React", "Node.js", "MongoDB"],
+    highlights: [
+      "JWT authentication",
+      "Cloudinary image uploads",
+      "PayPal payment flow",
+      "Admin analytics with ApexCharts",
+    ],
   },
 ];
 
@@ -152,51 +206,66 @@ export type TimelineNode = {
 };
 
 // Shown in the radial orbital timeline (Journey section).
-// TODO: refine dates and details.
 export const journey: TimelineNode[] = [
   {
     id: 1,
-    title: "Started Coding",
-    date: "2023",
+    title: "Started B.Tech CS",
+    date: "2022",
     status: "completed",
     energy: 100,
-    kind: "milestone",
+    kind: "education",
     content:
-      "TODO: where it began — first language, first project, the spark.",
+      "Began B.Tech in Computer Science at AKGEC (AKTU) — first lines of C++ " +
+      "and the habit of building things that work.",
     relatedIds: [2],
   },
   {
     id: 2,
-    title: "Full-Stack Web",
-    date: "2024",
+    title: "Security & Patents",
+    date: "2023",
     status: "completed",
-    energy: 90,
-    kind: "education",
+    energy: 85,
+    kind: "milestone",
     content:
-      "TODO: dove into the MERN stack, Next.js, and cloud — built and shipped.",
+      "Trained in ethical hacking (Craw Security), filed 2 IoT patents, and " +
+      "co-founded AKGEC's Centre for Future Studies & Research.",
     relatedIds: [1, 3],
   },
   {
     id: 3,
+    title: "Builder & Finalist",
+    date: "2024",
+    status: "completed",
+    energy: 80,
+    kind: "project",
+    content:
+      "Shipped a full-stack e-commerce platform and reached the Smart India " +
+      "Hackathon 2024 finals as backend developer + team lead.",
+    relatedIds: [2, 4],
+  },
+  {
+    id: 4,
     title: "Imarticus Internship",
     date: "2025",
     status: "in-progress",
     energy: 70,
     kind: "work",
     content:
-      "Interning (with a PPO) — backend systems, AI-assisted tooling, and " +
-      "security reviews on production services.",
-    relatedIds: [2, 4],
+      "Full-stack intern at Imarticus (PPO received) — a govt-scale LMS for " +
+      "200K+ users, RabbitMQ-powered AI pipelines, and VAPT security work.",
+    relatedIds: [3, 5],
   },
   {
-    id: 4,
+    id: 5,
     title: "What's Next",
     date: "2026",
     status: "pending",
-    energy: 30,
+    energy: 35,
     kind: "milestone",
-    content: "TODO: the next chapter — role, focus, or goal you're chasing.",
-    relatedIds: [3],
+    content:
+      "Graduating B.Tech — chasing high-impact backend / full-stack work and " +
+      "shipping QSpace.",
+    relatedIds: [4],
   },
 ];
 

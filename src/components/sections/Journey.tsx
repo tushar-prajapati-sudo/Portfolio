@@ -15,7 +15,7 @@ export function Journey() {
         <h2 className="mt-4 font-pixel text-2xl uppercase leading-[1.25] text-foreground sm:text-3xl md:text-4xl">
           How I <em className="not-italic text-primary">got here</em>.
         </h2>
-        <p className="mx-auto mt-4 max-w-md text-sm text-muted-foreground">
+        <p className="mx-auto mt-4 max-w-lg text-base text-muted-foreground sm:text-lg">
           Tap a node to expand it — related moments light up across the orbit.
         </p>
       </Container>

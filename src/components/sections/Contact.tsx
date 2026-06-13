@@ -1,4 +1,4 @@
-import { ArrowUpRight } from "lucide-react";
+import { Mail } from "lucide-react";
 import { ZoomSection } from "@/components/ui/zoom-section";
 import { profile, socials } from "@/data/portfolio";
 
@@ -14,7 +14,7 @@ export function Contact() {
           <em className="not-italic text-primary">worth shipping.</em>
         </h2>
 
-        <p className="mt-6 max-w-md text-lg text-muted-foreground">
+        <p className="mt-6 max-w-md text-lg text-foreground/85 sm:text-xl">
           A role, a project, or just a good argument about software — my inbox
           is open.
         </p>
@@ -22,10 +22,10 @@ export function Contact() {
         <a
           href={`mailto:${profile.email}`}
           data-cursor
-          className="pixel-btn group mt-9 inline-flex items-center gap-3 bg-primary px-6 py-4 text-[10px] text-primary-foreground"
+          className="group mt-9 inline-flex items-center gap-3 rounded-full border border-primary/40 bg-primary/10 px-7 py-3.5 text-base font-medium lowercase text-primary transition-colors hover:bg-primary hover:text-primary-foreground sm:text-lg"
         >
+          <Mail className="h-5 w-5 flex-shrink-0" />
           {profile.email}
-          <ArrowUpRight className="h-5 w-5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
         </a>
 
         <div className="mt-10 flex items-center gap-6">

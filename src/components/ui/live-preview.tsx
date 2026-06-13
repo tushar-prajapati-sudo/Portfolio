@@ -134,7 +134,7 @@ export function LivePreview({ title, url, description, tags, repo }: LiveProject
             </a>
           </div>
         </div>
-        <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-3 flex-1 text-base leading-relaxed text-muted-foreground">
           {description}
         </p>
         <ul className="mt-5 flex flex-wrap gap-2">

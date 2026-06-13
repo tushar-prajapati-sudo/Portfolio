@@ -18,7 +18,7 @@ export function About() {
 
       <div className="mt-7 space-y-5">
         {profile.about.map((para, i) => (
-          <p key={i} className="text-lg leading-relaxed text-muted-foreground">
+          <p key={i} className="text-lg leading-relaxed text-foreground/90 sm:text-xl">
             {para}
           </p>
         ))}
