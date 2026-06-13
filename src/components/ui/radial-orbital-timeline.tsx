@@ -32,17 +32,31 @@ export function RadialOrbitalTimeline({ nodes }: { nodes: TimelineNode[] }) {
   const [expanded, setExpanded] = useState<number | null>(null);
   const [rotation, setRotation] = useState(0);
   const [pulse, setPulse] = useState<Record<number, boolean>>({});
+  const [inView, setInView] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Auto-rotate the orbit while nothing is expanded (respects reduced motion).
+  // Only animate while the orbit is actually on screen — otherwise it would
+  // re-render ~25×/s in the background and stutter the rest of the page.
   useEffect(() => {
-    if (expanded !== null) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), {
+      threshold: 0.1,
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Auto-rotate the orbit while in view and nothing is expanded (respects
+  // reduced motion).
+  useEffect(() => {
+    if (!inView || expanded !== null) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const id = window.setInterval(() => {
       setRotation((r) => (r + 0.25) % 360);
     }, 40);
     return () => window.clearInterval(id);
-  }, [expanded]);
+  }, [expanded, inView]);
 
   const radius = 215;
 

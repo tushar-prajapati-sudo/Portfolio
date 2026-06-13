@@ -1,23 +1,21 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Play } from "lucide-react";
 import { GithubIcon } from "@/components/ui/brand-icons";
-import { cn } from "@/lib/utils";
 import type { LiveProject } from "@/data/portfolio";
 
 /**
- * A live site embedded in a browser-chrome frame.
+ * A live site embedded in a browser-chrome frame — click-to-load.
  *
- * The iframe is only mounted once the card scrolls near the viewport (to spare
- * the M1's memory — the page already runs Spline + a shader bg). The site is
- * rendered at ~2x and scaled to 0.5 so it reads as a desktop layout. A
- * transparent link sits over the iframe so a click opens the real site and the
- * embedded page can't trap the scroll. `sandbox` (without allow-top-navigation)
- * blocks any frame-busting redirects.
+ * The iframe is NOT mounted until the user clicks the poster. Live embeds
+ * (one runs a Three.js scene) repaint every frame and would fight Lenis + the
+ * Spline robot + the shader bg for the main thread on an 8GB M1, making the
+ * page scroll janky. Loading on demand keeps scrolling smooth; once loaded, a
+ * transparent link over the iframe opens the real site and stops it trapping
+ * scroll, and `sandbox` (no allow-top-navigation) blocks frame-busting.
  */
 export function LivePreview({ title, url, description, tags, repo }: LiveProject) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [show, setShow] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const host = (() => {
     try {
       return new URL(url).host;
@@ -26,25 +24,8 @@ export function LivePreview({ title, url, description, tags, repo }: LiveProject
     }
   })();
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShow(true);
-          io.disconnect();
-        }
-      },
-      { rootMargin: "300px" }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
   return (
     <motion.div
-      ref={ref}
       data-cursor
       initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -74,33 +55,56 @@ export function LivePreview({ title, url, description, tags, repo }: LiveProject
         </a>
       </div>
 
-      {/* Live viewport */}
+      {/* Viewport */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-background">
-        {show ? (
-          <iframe
-            src={url}
-            title={`${title} — live preview`}
-            loading="lazy"
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-            className="absolute left-0 top-0 origin-top-left border-0"
-            style={{ width: "200%", height: "200%", transform: "scale(0.5)" }}
-          />
+        {loaded ? (
+          <>
+            <iframe
+              src={url}
+              title={`${title} — live preview`}
+              loading="lazy"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              className="absolute left-0 top-0 origin-top-left border-0"
+              style={{ width: "200%", height: "200%", transform: "scale(0.5)" }}
+            />
+            {/* Click-catcher: opens the real site, keeps scroll on the page. */}
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              data-cursor
+              aria-label={`Open ${title}`}
+              className="absolute inset-0 z-10"
+            />
+          </>
         ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <span className="retro-label text-[9px] text-muted-foreground">
-              loading preview…
+          <button
+            type="button"
+            onClick={() => setLoaded(true)}
+            data-cursor
+            aria-label={`Load live preview of ${title}`}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3 transition-colors"
+          >
+            {/* Faint grid + amber glow poster. */}
+            <span
+              aria-hidden
+              className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,hsl(36_100%_60%/0.12),transparent_60%)]"
+            />
+            <span
+              aria-hidden
+              className="absolute inset-0 bg-[linear-gradient(to_right,hsl(0_0%_100%/0.04)_1px,transparent_1px),linear-gradient(to_bottom,hsl(0_0%_100%/0.04)_1px,transparent_1px)] bg-[size:40px_40px]"
+            />
+            <span className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-primary/60 bg-card/70 text-primary backdrop-blur transition-transform duration-200 group-hover:scale-105">
+              <Play className="h-6 w-6 translate-x-0.5" />
             </span>
-          </div>
+            <span className="relative retro-label text-[10px] text-foreground">
+              Load live preview
+            </span>
+            <span className="relative font-mono text-[11px] text-muted-foreground">
+              {host}
+            </span>
+          </button>
         )}
-        {/* Click-catcher: opens the real site, keeps scroll on the page. */}
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          data-cursor
-          aria-label={`Open ${title}`}
-          className="absolute inset-0 z-10"
-        />
       </div>
 
       {/* Caption */}
@@ -141,9 +145,7 @@ export function LivePreview({ title, url, description, tags, repo }: LiveProject
           {tags.map((tag) => (
             <li
               key={tag}
-              className={cn(
-                "rounded-none border border-white/10 px-2 py-0.5 font-pixel text-[8px] uppercase text-muted-foreground"
-              )}
+              className="rounded-none border border-white/10 px-2 py-0.5 font-pixel text-[8px] uppercase text-muted-foreground"
             >
               {tag}
             </li>
