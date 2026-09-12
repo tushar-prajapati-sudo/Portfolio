@@ -12,7 +12,7 @@
 
 /** Gzipped weight of this page's own CSS + JS. Checked against the build
  *  output — it appears in the footer and in the sandbox comparison. */
-export const BUILD_KB = 58;
+export const BUILD_KB = 60;
 
 export type Visibility = "public" | "private";
 
@@ -29,6 +29,8 @@ export const profile = {
   linkedin: "https://linkedin.com/in/tushar-prajapati-32065a266",
   linkedinHandle: "tushar-prajapati",
   resume: "/resume.pdf",
+  /** wa.me wants the number with no +, spaces or dashes. */
+  whatsapp: "https://wa.me/919354868063",
   /**
    * Deliberately not rendered on the page. It is on the résumé, which goes to
    * named people; this site is indexed by search engines and scraped for
@@ -40,7 +42,7 @@ export const profile = {
 export const availability = {
   state: "ready" as const,
   label: "Open to work",
-  detail: "AI Engineer & Full-Stack roles",
+  detail: "AI & Full-Stack roles",
 };
 
 /** Instrument readouts. Every one of these is on the résumé. */

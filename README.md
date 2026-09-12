@@ -4,7 +4,7 @@ Two sites in one repo.
 
 | Route | What it is | Payload |
 |---|---|---|
-| `/` | The current portfolio — an operations console for the systems in the résumé | ~59 KB |
+| `/` | The current portfolio — an operations console for the systems in the résumé | ~60 KB |
 | `/v1/` | The original 3D build: Spline robot, WebGL shaders, CRT overlays. Kept verbatim. | ~2 MB |
 
 They are separate Vite entries, so `/` never loads a byte of the Spline or
@@ -66,7 +66,7 @@ src/
 └── index.css              # Tailwind + tokens, used only by /v1
 ```
 
-`/` is plain CSS with no Tailwind, which is most of why it fits in 59 KB.
+`/` is plain CSS with no Tailwind, which is most of why it fits in 60 KB.
 `/v1` still uses Tailwind via `index.css`; the two never share tokens.
 
 ## Design system

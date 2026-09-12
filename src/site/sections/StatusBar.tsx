@@ -1,29 +1,11 @@
-import { useEffect, useState } from "react";
 import { profile, availability, stages } from "@/site/data";
 import { Chip } from "@/site/ui/parts";
 
-export function StatusBar() {
-  const [current, setCurrent] = useState<string>("");
-
-  useEffect(() => {
-    const targets = stages
-      .map((s) => document.getElementById(s.id))
-      .filter((el): el is HTMLElement => Boolean(el));
-    if (!targets.length) return;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (visible) setCurrent(visible.target.id);
-      },
-      { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
-    );
-    targets.forEach((t) => io.observe(t));
-    return () => io.disconnect();
-  }, []);
-
+/**
+ * The top bar. It retracts as the page docks and the rail takes over — the
+ * two never carry a destination the other lacks.
+ */
+export function StatusBar({ current }: { current: string }) {
   return (
     <header className="bar">
       <div className="bar-inner">

@@ -7,6 +7,9 @@
    ========================================================================= */
 
 :root {
+  --rail-w: 60px;
+  --travel: 48px;
+
   /* Topology legend, in the same percentage space as the nodes */
   --legend-l: 2.6%;
   --legend-t: 3.5%;
@@ -459,7 +462,11 @@ img, svg { display: block; max-width: 100%; }
   }
   .topo-wires, .topo-edge-label, .topo-packet { display: none; }
   .topo-node {
-    position: static;
+    /* Stays positioned so the connector pseudo-element anchors to the card
+       rather than to the grid; the desktop offsets are cleared explicitly. */
+    position: relative;
+    left: auto;
+    top: auto;
     width: auto;
     height: auto;
     padding: 10px 12px;
@@ -479,46 +486,255 @@ img, svg { display: block; max-width: 100%; }
   .topo-sub { font-size: 0.6875rem; }
 }
 
-/* --------------------------------------------------------------- hero --- */
+/* --------------------------------------------------------- shell --- */
 
-.hero { padding-top: calc(var(--bar-h) + 40px); padding-bottom: 48px; }
-@media (min-width: 900px) { .hero { padding-top: calc(var(--bar-h) + 72px); padding-bottom: 72px; } }
+/* `--p` is scroll progress, 0 at the top and 1 once the hero has docked into
+   the left panel. It is written from JS each frame and drives transforms only,
+   so the motion composites instead of re-laying-out the page. */
+.shell { --p: 0; }
 
-.hero-head { display: grid; gap: 40px; }
+.split { display: block; }
+
 @media (min-width: 1040px) {
-  .hero-head { grid-template-columns: minmax(320px, 5fr) 7fr; gap: 56px; align-items: start; }
+  .split {
+    display: grid;
+    grid-template-columns: minmax(340px, 34%) minmax(0, 1fr);
+    /* The gutter is reserved at every scroll position, so the rail arriving
+       shifts nothing. */
+    padding-left: var(--rail-w);
+  }
+
+  /* Fixed left, scrolling right — sticky does it with no JS. */
+  .home {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    border-right: 1px solid var(--line);
+  }
 }
 
-.hero-id { display: flex; flex-direction: column; align-items: flex-start; }
-.hero-name { margin-top: 20px; }
-.hero-title {
-  margin-top: 12px;
-  font-size: 0.875rem;
-  letter-spacing: 0.06em;
+/* ----------------------------------------------------------- rail --- */
+
+.rail { display: none; }
+
+@media (min-width: 1040px) {
+  .rail {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 45;
+    width: var(--rail-w);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 0 16px;
+    background: var(--field);
+    transform: translateX(calc(-100% + 100% * var(--p)));
+    box-shadow: 1px 0 0 var(--field-line), 6px 0 22px rgba(18, 22, 28, 0.16);
+  }
+}
+
+.rail-mark {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--field-ink);
+  text-decoration: none;
+  border: 1px solid var(--field-line);
+  border-radius: var(--r-chip);
+  padding: 6px 7px;
+  flex: none;
+}
+.rail-mark:hover { background: var(--field-2); }
+
+.rail-list { display: flex; flex-direction: column; gap: 4px; }
+.rail-end { margin-top: auto; }
+
+.rail-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r);
+  color: var(--field-ink-2);
+  text-decoration: none;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+.rail-btn:hover { color: var(--field-ink); background: var(--field-2); }
+/* Current stage is marked by a rule as well as a colour. */
+.rail-btn[aria-current="true"] { color: var(--field-ink); background: var(--field-2); }
+.rail-btn[aria-current="true"]::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: var(--field-ink);
+}
+.rail-btn[data-accent="queued"]:hover { color: #e8a33d; background: #2a2013; }
+
+.rail-tip {
+  position: absolute;
+  left: calc(100% + 10px);
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--field-2);
+  color: var(--field-ink);
+  border: 1px solid var(--field-line);
+  border-radius: var(--r-chip);
+  padding: 5px 8px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.rail-btn:hover .rail-tip,
+.rail-btn:focus-visible .rail-tip { opacity: 1; transform: translateX(0); }
+
+/* The bar retracts as the rail arrives. */
+.bar {
+  transform: translateY(calc(-100% * var(--p)));
+  opacity: clamp(0, calc(1 - var(--p) * 1.6), 1);
+}
+.shell[data-docked="true"] .bar { pointer-events: none; }
+
+/* ----------------------------------------------------- home panel --- */
+
+.home { padding: calc(var(--bar-h) + 32px) 20px 40px; }
+@media (min-width: 768px) { .home { padding-inline: 40px; } }
+@media (min-width: 1040px) {
+  .home {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: calc(var(--bar-h) + 40px) 40px 32px 32px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+  }
+}
+
+.home-inner { display: flex; flex-direction: column; align-items: flex-start; }
+@media (min-width: 1040px) {
+  /* The block sits inset from the column at rest and travels left onto the
+     rail as it docks. The width is reserved for the travel so nothing clips. */
+  .home-inner {
+    max-width: calc(100% - var(--travel));
+    transform: translateX(calc(var(--travel) * (1 - var(--p))));
+  }
+}
+
+.home-avail { margin-bottom: 20px; }
+
+.home-name {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  margin-bottom: 12px;
+}
+.home-name span { display: inline; }
+.home-name span + span::before { content: " "; }
+@media (min-width: 1040px) {
+  .home-name { font-size: clamp(2.25rem, 3.4vw, 3.5rem); }
+  /* Stacked in the panel: one word per line leaves room for the travel. */
+  .home-name span { display: block; }
+  .home-name span + span::before { content: none; }
+}
+
+.home-title {
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-2);
 }
-.hero-thesis { margin-top: 20px; max-width: 46ch; }
 
-.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
-.hero-loc { margin-top: 20px; }
+.home-thesis { margin-top: 20px; max-width: 42ch; }
+.home-loc { margin-top: 20px; }
 
-.hero-topo { min-width: 0; }
+.home-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.home-btn { padding-inline: 16px; }
+.home-btn svg { flex: none; }
 
-/* Readout field — the numbers carry the fold, on the graphite ground. */
-.readout-field { background: var(--field); border-block: 1px solid var(--field-line); }
-.readout-strip {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.home-resume {
+  margin-top: 14px;
+  font-size: 0.875rem;
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  text-decoration-color: var(--line-strong);
 }
-@media (min-width: 720px) { .readout-strip { grid-template-columns: repeat(5, 1fr); } }
+.home-resume:hover { color: var(--ink); text-decoration-color: var(--ink); }
+.home-resume .mono { font-size: 0.6875rem; color: var(--ink-3); margin-left: 4px; }
+
+/* Collapse/reveal is confined to the panel, and only runs on the split
+   layout — on one column everything stays open. */
+.home-fade { max-height: none; }
+.home-stats { display: none; }
+
+@media (min-width: 1040px) {
+  .home-fade {
+    overflow: hidden;
+    max-height: calc(var(--fh, 160px) * (1 - var(--p)));
+    opacity: clamp(0, calc(1 - var(--p) * 2), 1);
+  }
+  .home-stats {
+    display: flex;
+    gap: 22px;
+    margin: 0;
+    overflow: hidden;
+    max-height: calc(74px * var(--p));
+    opacity: clamp(0, calc(var(--p) * 2 - 1), 1);
+  }
+}
+
+.home-stat { padding-top: 22px; }
+.home-stat-v {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.home-stat-v span { font-size: 0.55em; color: var(--ink-3); margin-left: 0.1em; }
+.home-stat-l { margin: 5px 0 0; font-size: 0.5625rem; }
+
+/* -------------------------------------------------------- stream --- */
+
+.stream { min-width: 0; }
+.stream-head { padding-top: calc(var(--bar-h) + 32px); }
+@media (min-width: 1040px) { .stream-head { padding-top: calc(var(--bar-h) + 24px); } }
+
+.stream-pad { padding: 0 20px; }
+@media (min-width: 768px) { .stream-pad { padding: 0 40px; } }
+@media (min-width: 1040px) { .stream-pad { padding: 0 40px 0 32px; } }
+
+/* In the split layout the stream owns its own gutters; the centred container
+   would otherwise leave the column badly off-axis. */
+@media (min-width: 1040px) {
+  .stream .wrap { max-width: none; padding: 0 40px 0 32px; }
+}
+
+.topo { margin-bottom: 40px; }
+
+/* Readout field — the numbers close the fold, on the graphite ground. */
+.readout-field { background: var(--field); border-block: 1px solid var(--field-line); }
+.readout-strip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 720px) { .readout-strip { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 
 .readout { padding: 20px 16px 20px 0; border-right: 1px solid var(--field-line); }
 .readout:last-child { border-right: 0; }
 @media (max-width: 719px) {
   .readout { border-bottom: 1px solid var(--field-line); padding-right: 16px; }
   .readout:nth-child(2n) { border-right: 0; padding-left: 16px; }
-  .readout:nth-last-child(-n + 1) { border-bottom: 0; }
+  .readout:last-child { border-bottom: 0; }
 }
 @media (min-width: 720px) { .readout { padding-left: 16px; } .readout:first-child { padding-left: 0; } }
 
@@ -590,7 +806,7 @@ img, svg { display: block; max-width: 100%; }
 
 .sys-cols { display: grid; gap: 32px; margin-top: 28px; }
 @media (min-width: 900px) {
-  .sys-cols { grid-template-columns: 1.55fr 1fr; gap: 48px; }
+  .sys-cols { grid-template-columns: 1.55fr minmax(0, 1fr); gap: 48px; }
   .sys-col-side {
     position: sticky;
     top: calc(var(--bar-h) + 24px);
@@ -667,7 +883,7 @@ img, svg { display: block; max-width: 100%; }
 /* -------------------------------------------------------- credentials --- */
 
 .cred-grid { display: grid; gap: 0; margin-top: -1px; }
-@media (min-width: 780px) { .cred-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 780px) { .cred-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 .cred {
   background: var(--panel);
@@ -686,8 +902,9 @@ img, svg { display: block; max-width: 100%; }
 /* ------------------------------------------------------- capabilities --- */
 
 .cap-grid { display: grid; gap: 0; }
-@media (min-width: 640px) { .cap-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1040px) { .cap-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 640px) { .cap-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1040px) { .cap-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1500px) { .cap-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
 .cap {
   background: var(--panel);
@@ -722,7 +939,7 @@ img, svg { display: block; max-width: 100%; }
 .contact-live { width: 6px; height: 6px; border-radius: 50%; background: #5fcf96; flex: none; }
 
 .contact-body { display: grid; gap: 40px; }
-@media (min-width: 900px) { .contact-body { grid-template-columns: 1.5fr 1fr; gap: 64px; } }
+@media (min-width: 900px) { .contact-body { grid-template-columns: 1.5fr minmax(0, 1fr); gap: 64px; } }
 
 .contact-head { color: var(--field-ink); max-width: 22ch; }
 .contact-sub { margin-top: 16px; color: var(--field-ink-2); font-size: 1rem; max-width: 52ch; }
@@ -798,7 +1015,7 @@ img, svg { display: block; max-width: 100%; }
   padding: 24px 20px;
 }
 @media (min-width: 860px) {
-  .sandbox { grid-template-columns: 1.7fr 1fr; gap: 56px; padding: 32px 28px; align-items: center; }
+  .sandbox { grid-template-columns: 1.7fr minmax(0, 1fr); gap: 56px; padding: 32px 28px; align-items: center; }
 }
 
 .sandbox-eyebrow {

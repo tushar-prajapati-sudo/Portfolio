@@ -54,13 +54,14 @@ real pipeline with real numbers rather than an adjective, and acts by mailing
 him or opening the résumé.
 
 **FIRST VIEWPORT.** Status bar pinned top, dark, carrying identity, an
-availability chip, and stage nav. Beneath it on the gridded canvas: name at
-display scale left, one-sentence thesis under it, primary action (email) and
-secondary (résumé) immediately below at the left. Filling the right two-thirds,
-the live topology of the Imarticus AI pipeline — ingest, priority queues, the
-Gemini worker, retry and dead-letter paths, three consumer features — with
-packets moving along the edges. A readout strip of five real instrument values
-closes the fold.
+availability chip, and stage nav. Beneath it the canvas splits: the identity
+panel on the left — name stacked at display scale, one-sentence thesis, Email
+and WhatsApp actions — and on the right the live topology of the Imarticus AI
+pipeline (ingest, priority queues, the Gemini worker, retry and dead-letter
+paths, three consumer features) with packets moving along the edges. A readout
+strip of five real instrument values closes the fold. On scroll the surface
+docks: the bar retracts, an icon rail arrives from the left, the identity panel
+travels left and holds while the right column scrolls beneath it.
 
 **FORM.** Pipeline/queue topology console (RabbitMQ management, Airflow DAG,
 Temporal), candidate 5 of the ordered grounded list, seed key `5178425e`.
@@ -212,9 +213,16 @@ separated by 1px rules. The only depth cues are:
 - **None** for panels, cards, and buttons.
 - `0 1px 0 rgba(18,22,28,0.06)` only beneath the fixed status bar, to seat it.
 
+### The one elevation
+The rail is the single exception to flatness, and it earns it by being a real
+layer: it is fixed above content that scrolls underneath it, which a 1px rule
+cannot express. It casts `1px 0 0 var(--field-line), 6px 0 22px rgba(18,22,28,
+0.16)` — a true offset with a soft blur, never a zero-offset halo. Nothing else
+on the surface may take a shadow.
+
 ### Named Rules
 **The Flat Rule.** If a surface needs separating, it gets a rule or a ground
-change — never a shadow.
+change — never a shadow. The rail is the one documented exception.
 
 ## Shapes
 
@@ -262,6 +270,37 @@ linear loop; packets are suppressed entirely under `prefers-reduced-motion`, and
 the diagram remains complete and legible without them. Every node is a real
 component of a real system Tushar built — the topology is never illustrative.
 
+### Signature behaviour: the dock
+Above 1040px the page is a two-column shell — identity panel left, content
+stream right — and the panel is `position: sticky`, so "left fixed, right
+scrolls" costs no JavaScript. Scroll progress over the first 280px is written
+to `--p` (0→1) on the shell and drives the transition:
+
+| `--p` | what moves |
+|---|---|
+| 0 | top bar full, no rail, identity block inset 48px into its column, thesis and location open |
+| 0→1 | bar translates up and fades, rail translates in from `-100%`, identity block travels its 48px left, thesis and location collapse, headline metrics reveal |
+| 1 | rail seated with its shadow, panel compact and held, stream scrolling |
+
+Every `--p`-driven property is a transform, an opacity, or a `max-height` on a
+small subtree inside the panel — measured at a 16.7ms median frame interval
+with no frame over 20ms through the full range. `--p` is never used to drive a
+page-level layout property, and the rail's gutter is reserved at every scroll
+position so its arrival shifts nothing.
+
+Below 1040px none of this runs: one column, top bar, no rail, nothing
+collapsed. Under `prefers-reduced-motion` the shell snaps between the two end
+states instead of travelling between them.
+
+### Rail
+60px, graphite field, fixed full height. An identity mark at the top, the five
+stage symbols in the middle, sandbox and résumé pinned to the bottom. Symbols
+are drawn in the topology's own vocabulary — orthogonal 1.5px strokes, square
+caps, no diagonals or curves — never borrowed from an icon set. The current
+stage is marked by a 2px bar at the rail edge as well as by ground, never by
+colour alone. Each button carries a real text label that appears on hover and
+focus, so the rail is never a set of unlabelled glyphs to a screen reader.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -275,6 +314,7 @@ component of a real system Tushar built — the topology is never illustrative.
 ### Don't:
 - Add a shadow, a glow, a glass blur, or a multi-stop gradient.
 - Round anything past 4px, or curve a connector.
+- Give anything but the rail a shadow, or drive a layout property from `--p`.
 - Uppercase Archivo, or set a number in it.
 - Use a status color for a heading, an icon, or emphasis.
 - Introduce a second accent "for variety" — the palette is closed.
