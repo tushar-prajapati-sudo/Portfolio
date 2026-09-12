@@ -207,7 +207,12 @@ floating with gaps — the console reads as one assembled instrument, not a card
 feed.
 
 Rhythm: `72px` between major sections on desktop, `48px` on mobile, and always
-more space above a heading than below it. Density alternates deliberately — the
+more space above a heading than below it. Sections own their separation through
+their own padding — never padding *and* a margin, which is what put 144px of
+dead ground before the sandbox. The two graphite blocks that close the page
+(sandbox, then contact) butt directly together and are divided by a single
+`--field-line` rule: a strip of light ground between two dark fields reads as a
+mistake, not a gap. Density alternates deliberately — the
 dense readout strip and skills matrix are each followed by a quiet region.
 
 Responsive: the topology switches from a horizontal flow to a vertical stack
@@ -299,7 +304,9 @@ to `--p` (0→1) on the shell and drives the transition:
 
 Every `--p`-driven property is a transform, an opacity, or a `max-height` on a
 small subtree inside the panel — measured at a 16.7ms median frame interval
-with no frame over 20ms through the full range. `--p` is never used to drive a
+with no frame over 20ms through the full range, with no `content-visibility`
+needed to get there (it was tried, changed nothing, and left sections
+unpainted on a fast scroll). `--p` is never used to drive a
 page-level layout property, and the rail's gutter is reserved at every scroll
 position so its arrival shifts nothing.
 
@@ -327,6 +334,13 @@ inline beneath its row as an ordinary disclosure, and the row carries
 
 This is the density rule generally: the surface shows the shortest thing that
 lets someone decide whether to read more, and the reading happens in the frame.
+
+### Scroll ownership
+The panel is a scroll container only so a long record can be read inside it,
+and its `overscroll-behavior` must stay `auto`. With `contain`, a panel holding
+nothing scrollable swallowed the wheel instead of chaining it to the page, and
+the entire left half of the screen became a dead zone. A sticky sidebar is not
+a modal; it never traps the wheel.
 
 ### The cursor
 A CAD crosshair tracks the pointer — two 1px `--line-strong` rules spanning the

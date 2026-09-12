@@ -613,9 +613,13 @@ img, svg { display: block; max-width: 100%; }
     flex-direction: column;
     justify-content: flex-start;
     padding: calc(var(--bar-h) + 40px) 40px 32px 32px;
+    /* The panel scrolls only when a record is open and actually overflows.
+       overscroll-behavior must stay `auto` here: with `contain`, a panel with
+       nothing to scroll swallows the wheel instead of chaining it to the page,
+       which made the whole left side a dead zone. */
     overflow-y: auto;
     overflow-x: hidden;
-    overscroll-behavior: contain;
+    overscroll-behavior-y: auto;
   }
 }
 
@@ -746,13 +750,9 @@ img, svg { display: block; max-width: 100%; }
 /* -------------------------------------------------------- stream --- */
 
 .stream { min-width: 0; }
-@media (min-width: 1040px) {
-  .stream > section,
-  .stream > .section {
-    content-visibility: auto;
-    contain-intrinsic-size: auto 900px;
-  }
-}
+/* content-visibility was here to keep the dock transition cheap. Measured
+   without it and the frame budget is unchanged, so it is gone — it left
+   unpainted gaps when a section came into view during a fast scroll. */
 .stream-head { padding-top: calc(var(--bar-h) + 32px); }
 @media (min-width: 1040px) { .stream-head { padding-top: calc(var(--bar-h) + 24px); } }
 
@@ -1037,10 +1037,10 @@ img, svg { display: block; max-width: 100%; }
   background: var(--field);
   color: var(--field-ink);
   border-top: 1px solid var(--field-line);
-  padding-block: 48px 24px;
-  margin-top: 48px;
+  padding-block: 44px 24px;
+  margin-top: 0;
 }
-@media (min-width: 768px) { .contact-field { padding-block: 72px 24px; margin-top: 72px; } }
+@media (min-width: 768px) { .contact-field { padding-block: 60px 28px; } }
 
 .contact-rail {
   display: flex;
@@ -1125,11 +1125,11 @@ img, svg { display: block; max-width: 100%; }
   background: var(--field);
   color: var(--field-ink);
   border-block: 1px solid var(--field-line);
-  padding-block: 48px 56px;
-  margin-top: 48px;
+  padding-block: 44px 52px;
+  margin-top: 0;
   overflow: hidden;
 }
-@media (min-width: 768px) { .sandbox-field { padding-block: 64px 72px; margin-top: 72px; } }
+@media (min-width: 768px) { .sandbox-field { padding-block: 60px 64px; } }
 
 .sandbox-rail {
   display: flex;
@@ -1261,10 +1261,10 @@ img, svg { display: block; max-width: 100%; }
   background: var(--field);
   color: var(--field-ink);
   border-top: 1px solid var(--field-line);
-  padding-block: 48px 24px;
-  margin-top: 48px;
+  padding-block: 44px 24px;
+  margin-top: 0;
 }
-@media (min-width: 768px) { .contact-field { padding-block: 72px 24px; margin-top: 72px; } }
+@media (min-width: 768px) { .contact-field { padding-block: 60px 28px; } }
 
 .contact-rail {
   display: flex;
