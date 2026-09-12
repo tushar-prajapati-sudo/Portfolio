@@ -858,3 +858,10 @@ img, svg { display: block; max-width: 100%; }
   .topo-legend { position: static; order: 99; }
   .topo-legend ul { gap: 6px 16px; }
 }
+
+/* When the flow wraps, the connector at the end of a row dangles into empty
+   space. Below the wrap point the steps read fine as a plain chip row. */
+@media (max-width: 680px) {
+  .flow { gap: 6px; }
+  .flow-link { display: none; }
+}
