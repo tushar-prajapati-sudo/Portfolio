@@ -1,5 +1,7 @@
-import { profile, availability, readouts } from "@/site/data";
+import { profile, availability, readouts, stages } from "@/site/data";
 import { Chip } from "@/site/ui/parts";
+import { SystemDetail } from "@/site/ui/SystemDetail";
+import { systems } from "@/site/data";
 import { MailIcon, WhatsappIcon } from "@/site/ui/icons";
 
 /**
@@ -7,10 +9,30 @@ import { MailIcon, WhatsappIcon } from "@/site/ui/icons";
  * left panel once you scroll — the same element throughout, so nothing
  * re-mounts and the motion has something real to move.
  */
-export function HomePanel() {
+export function HomePanel({
+  current,
+  openId,
+  onClose,
+}: {
+  current: string;
+  openId: string | null;
+  onClose: () => void;
+}) {
+  const open = openId ? systems.find((s) => s.id === openId) : undefined;
+
   return (
     <aside className="home" id="top">
-      <div className="home-inner">
+      {/* The panel ground resolves in as the surface separates; at rest the
+          two halves share one canvas. */}
+      <span className="home-ground" aria-hidden="true" />
+
+      {open ? (
+        <div className="home-detail">
+          <SystemDetail s={open} onClose={onClose} />
+        </div>
+      ) : null}
+
+      <div className="home-inner" hidden={Boolean(open)}>
         <Chip state={availability.state} className="chip-block home-avail">
           {availability.label} — {availability.detail}
         </Chip>
@@ -51,7 +73,21 @@ export function HomePanel() {
           <p className="home-loc label">{profile.location} · Remote &amp; hybrid</p>
         </div>
 
-        {/* Appears once docked, so the evidence stays on screen while they read. */}
+        {/* Both of these arrive once the panel has separated. The index says
+            which section of the right-hand column you are in. */}
+        <nav className="home-index" aria-label="Section index">
+          <ol>
+            {stages.map((s, i) => (
+              <li key={s.id}>
+                <a href={`#${s.id}`} aria-current={current === s.id ? "true" : undefined}>
+                  <span className="home-index-n mono">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="home-index-l">{s.label}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+
         <dl className="home-stats" aria-label="Headline metrics">
           {readouts.slice(0, 3).map((r) => (
             <div key={r.label} className="home-stat">

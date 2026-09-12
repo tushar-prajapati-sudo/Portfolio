@@ -17,16 +17,24 @@ export function Contact() {
         <div className="contact-body">
           <div className="contact-lead">
             <p className="headline contact-head">
-              If you&rsquo;re hiring for AI engineering or full-stack work, I&rsquo;d
-              like to hear what you&rsquo;re building.
+              Say hi. I&rsquo;d genuinely love to hear what you&rsquo;re building.
             </p>
             <p className="contact-sub">
-              The fastest route is email. I read everything and reply to anything
+              Hiring, collaborating, or just want to argue about queue design — email
+              or WhatsApp both reach me. I read everything, and I reply to anything
               specific.
             </p>
             <div className="contact-actions">
               <a className="btn contact-btn" href={`mailto:${profile.email}`}>
                 {profile.email}
+              </a>
+              <a
+                className="btn btn-secondary contact-btn"
+                href={profile.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                WhatsApp
               </a>
               <a
                 className="btn btn-secondary contact-btn"
@@ -73,8 +81,8 @@ export function Contact() {
         </div>
 
         <footer className="contact-foot">
-          <span className="label">© {new Date().getFullYear()} {profile.name}</span>
-          <span className="label">React · Vite · {BUILD_KB} KB gzipped · no trackers</span>
+          <span className="label">© {new Date().getFullYear()} {profile.name} · {BUILD_KB} KB, no trackers</span>
+          <span className="label">{profile.motto}</span>
         </footer>
       </div>
     </section>

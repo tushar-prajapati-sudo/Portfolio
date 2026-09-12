@@ -24,7 +24,18 @@ export function PipelineIcon(p: P) {
       <rect x="1.5" y="7.5" width="5" height="5" />
       <path d="M6.5 10h7" />
       <rect x="13.5" y="7.5" width="5" height="5" />
-      <circle cx="10" cy="10" r="1.25" fill="currentColor" stroke="none" />
+      <rect x="8.75" y="8.75" width="2.5" height="2.5" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+/** A person, built from squares. */
+export function AboutIcon(p: P) {
+  return (
+    <svg {...box} {...p}>
+      <rect x="7" y="2.5" width="6" height="6" />
+      <path d="M3 17.5v-2.5h14v2.5" />
+      <path d="M3 15h14" />
     </svg>
   );
 }
@@ -113,6 +124,7 @@ export function WhatsappIcon(p: P) {
 
 export const STAGE_ICONS: Record<string, (p: P) => JSX.Element> = {
   pipeline: PipelineIcon,
+  about: AboutIcon,
   systems: SystemsIcon,
   record: RecordIcon,
   stack: StackIcon,

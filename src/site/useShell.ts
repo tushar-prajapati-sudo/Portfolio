@@ -63,6 +63,20 @@ export function useDockProgress(ref: React.RefObject<HTMLElement>) {
   return docked;
 }
 
+/** True once the split layout is in play. */
+export function useIsWide() {
+  const [wide, setWide] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(`(min-width: ${SPLIT_AT}px)`).matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(`(min-width: ${SPLIT_AT}px)`);
+    const on = () => setWide(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return wide;
+}
+
 /** Which section is currently in view — shared by the top bar and the rail. */
 export function useCurrentStage() {
   const [current, setCurrent] = useState("");

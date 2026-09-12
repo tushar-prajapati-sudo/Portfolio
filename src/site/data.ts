@@ -12,7 +12,7 @@
 
 /** Gzipped weight of this page's own CSS + JS. Checked against the build
  *  output — it appears in the footer and in the sandbox comparison. */
-export const BUILD_KB = 60;
+export const BUILD_KB = 63;
 
 export type Visibility = "public" | "private";
 
@@ -21,7 +21,16 @@ export const profile = {
   title: "AI Engineer & Full Stack Developer",
   /** The one sentence that has to land in the first viewport. */
   thesis:
-    "I build AI systems with production instincts — eval gates, memory architecture, queue topology and token economics — on platforms that carry real load.",
+    "I build AI systems and the infrastructure underneath them — agents, RAG, queues, evals — and I like the messy problems that only show up once software leaves your laptop.",
+  /** Tushar's own words, adapted from his LinkedIn bio. Keep this voice. */
+  greeting: "Hihi People,",
+  intro: [
+    "I'm Tushar — an AI Engineer & Full Stack Developer who enjoys working on systems where things need to be reliable, scalable, and actually work in production.",
+    "I'm interested in the deeper side of engineering: backend architecture, distributed systems, AI infrastructure, asynchronous processing, performance, and the messy problems that appear when software moves beyond a local machine.",
+    "I care less about being tied to a particular language, framework or ecosystem, and more about understanding what's happening underneath, choosing the right abstraction, and building systems that hold up under real-world constraints.",
+    "Right now I'm working on AI agents, LLM systems, RAG, distributed AI workflows, system design, and the space where intelligent systems meet serious software engineering.",
+  ],
+  motto: "Build. Break. Understand. Ship. Repeat.",
   location: "Noida, India",
   email: "tusharprt5@gmail.com",
   github: "https://github.com/tushar-prajapati-sudo",
@@ -325,9 +334,10 @@ export const certifications = [
 ];
 
 export const stages = [
-  { id: "pipeline", label: "Pipeline" },
-  { id: "systems", label: "Systems" },
-  { id: "record", label: "Record" },
-  { id: "stack", label: "Stack" },
-  { id: "contact", label: "Contact" },
+  { id: "pipeline", label: "Live" },
+  { id: "about", label: "Hihi" },
+  { id: "systems", label: "Builds" },
+  { id: "record", label: "Work" },
+  { id: "stack", label: "Toolkit" },
+  { id: "contact", label: "Say hi" },
 ];

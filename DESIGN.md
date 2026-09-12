@@ -22,6 +22,8 @@ colors:
   field-ready-bg: "#16281F"
   field-queued: "#E8A33D"
   field-queued-bg: "#2A2013"
+  field-queued-pressed: "#F2B459"
+  field-queued-ink: "#1A1206"
 typography:
   display: Archivo
   body: Archivo
@@ -131,7 +133,11 @@ darker ground, mid-strength border. Only two states ever appear on the field:
 - **Field Ready** (`#5FCF96` on `#16281F`, border `#2F6B4C`): the availability
   chip in the status bar. 7.1:1 against the field.
 - **Field Queued** (`#E8A33D` on `#2A2013`): the sandbox segment of the
-  environment switch, on hover only.
+  environment switch, and the whole sandbox block — its kicker, its call to
+  action, and the frame border on hover. `#1A1206` is the ink that sits on a
+  full-strength amber fill; `#F2B459` is its hover. Amber on the graphite field
+  is the one place the surface is allowed to be loud, and it is reserved
+  entirely for the sandbox.
 
 ### Pressed and hover values
 Interaction darkens or lightens the resting fill by one fixed step; these are
@@ -155,6 +161,12 @@ from the graphite field, never from light.
 **Display Font:** Archivo (variable width + weight; fallback `system-ui`)
 **Body Font:** Archivo
 **Label/Mono Font:** JetBrains Mono (fallback `ui-monospace`)
+
+**Voice:** Tushar's own, taken from how he actually writes — warm, direct,
+first person, curious rather than boastful. "Hihi People," opens the
+introduction and "Build. Break. Understand. Ship. Repeat." closes the page.
+Copy may be friendly; it may never be vague. A sentence that could appear on
+any engineer's site gets cut.
 
 **Character:** Archivo is an industrial grotesk with a real width axis — it can
 be pulled tight and heavy for display without becoming a neutral UI sans, and
@@ -184,8 +196,9 @@ separate Ink-3 span at 0.55em. Numbers never sit in Archivo.
 ## Layout
 
 A 16px schematic grid is the page's spatial unit and is drawn, not implied.
-Content sits in a 1240px max container with 20px gutters on mobile and 40px from
-`md` up. Panels snap to the grid: every panel edge, gap, and internal pad is a
+The layout is full-bleed — there is no centred max-width container, because a
+console occupies its screen. Gutters are 20px on mobile and 40px from `md` up;
+prose is held to a 68ch measure by type rather than by a page column. Panels snap to the grid: every panel edge, gap, and internal pad is a
 multiple of 8, and the common values are 8 / 16 / 24 / 40 / 72.
 
 Sections are panels with a header rail (mono label left, state or count right)
@@ -226,10 +239,12 @@ change — never a shadow. The rail is the one documented exception.
 
 ## Shapes
 
-Radii: `2px` for chips, labels, and inputs; `4px` for panels and buttons; `50%`
-only for port dots and status dots. Nothing above 4px. Connectors are orthogonal
-polylines with square corners — no bezier curves anywhere in the diagram
-language. Port dots are 6px filled circles on panel edges.
+Radii: `2px` for chips, labels, and inputs; `4px` for panels and buttons.
+Nothing above 4px, and **no circles anywhere** — status marks are 7px squares at
+1px radius, matching the 4px square packet that travels the topology. A round
+status dot is the generic web's shorthand; a square reads as an instrument.
+Connectors are orthogonal polylines with square corners — no bezier curves
+anywhere in the diagram language.
 
 ## Components
 
@@ -301,6 +316,34 @@ stage is marked by a 2px bar at the rail edge as well as by ground, never by
 colour alone. Each button carries a real text label that appears on hover and
 focus, so the rail is never a set of unlabelled glyphs to a screen reader.
 
+### Signature interaction: the index and the frame
+Nothing arrives as a wall of text. **Builds** is a scannable index — number,
+name, one line of kind, state, year — and opening a row moves its full record
+into the left frame, which is what a fixed inspector panel is for. A back
+control returns the panel to identity; Escape does the same; focus moves to the
+record heading on open. Below 1040px there is no frame, so the record opens
+inline beneath its row as an ordinary disclosure, and the row carries
+`aria-expanded` either way.
+
+This is the density rule generally: the surface shows the shortest thing that
+lets someone decide whether to read more, and the reading happens in the frame.
+
+### The cursor
+A CAD crosshair tracks the pointer — two 1px `--line-strong` rules spanning the
+viewport — with a 460px soft white light beneath it. The surface is a
+measurement canvas, so a crosshair is its native cursor rather than an
+ornament. Position is written as two custom properties feeding transforms only,
+so it composites. It is off entirely for coarse pointers and for reduced
+motion, and it never intercepts a click.
+
+### The sandbox block
+One block on the page is allowed to be loud, and it is the one pointing at
+`/v1`: full-bleed graphite field, amber kicker and call to action, and a real
+captured frame of the 3D build in a frame that sits at `rotateY(-7deg)` and
+comes level on hover, with a scanline wash that lifts as it does. Everything
+else on the surface stays quiet so this one lands. The image is lazy-loaded and
+carries a real description, and the tilt is dropped under reduced motion.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -314,7 +357,9 @@ focus, so the rail is never a set of unlabelled glyphs to a screen reader.
 ### Don't:
 - Add a shadow, a glow, a glass blur, or a multi-stop gradient.
 - Round anything past 4px, or curve a connector.
-- Give anything but the rail a shadow, or drive a layout property from `--p`.
+- Give anything but the rail and the sandbox frame a shadow, or drive a layout property from `--p`.
+- Animate `padding`, `width`, `height` or `margin` on hover — use a transform.
+- Put a circle on the surface, or open a record as a modal.
 - Uppercase Archivo, or set a number in it.
 - Use a status color for a heading, an icon, or emphasis.
 - Introduce a second accent "for variety" — the palette is closed.
