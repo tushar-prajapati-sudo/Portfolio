@@ -1,68 +1,100 @@
 # Portfolio — Tushar Prajapati
 
-A single-page developer portfolio built with **Vite + React + TypeScript +
-Tailwind**. Dark, amber-accented, with an interactive Spline 3D robot in the
-hero, a hand-written WebGL shader background, a custom cursor spotlight, and
-scroll/orbital animations.
+Two sites in one repo.
+
+| Route | What it is | Payload |
+|---|---|---|
+| `/` | The current portfolio — an operations console for the systems in the résumé | ~59 KB |
+| `/v1/` | The original 3D build: Spline robot, WebGL shaders, CRT overlays. Kept verbatim. | ~2 MB |
+
+They are separate Vite entries, so `/` never loads a byte of the Spline or
+shader bundle.
 
 ## Quick start
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
+npm run dev      # http://localhost:5173        (/ and /v1/)
 npm run build    # type-check + production build
-npm run preview
+npm run preview  # serve dist/ on :4173
 ```
 
-> Requires Node 18+. Fonts load from Google Fonts and the robot loads from
-> `prod.spline.design`, so the site needs network access at runtime.
+Requires Node 18+.
 
 ## Editing content
 
-**All copy lives in [`src/data/portfolio.ts`](src/data/portfolio.ts)** — name,
-role, about, socials, skills, projects, and the journey timeline. Anything
-marked `TODO:` is a placeholder to replace. You shouldn't need to touch the
-section components to update text or links.
+**Everything on `/` lives in [`src/site/data.ts`](src/site/data.ts)** — profile,
+metrics, the pipeline topology, the system write-ups, roles, skills and
+credentials. You should not need to touch a component to change copy.
 
-To add a résumé: drop `resume.pdf` in `public/`.
-To add project screenshots: drop images in `public/projects/` and point the
-project's `image` field at them.
+Two rules that file enforces, and they matter:
+
+1. **It has to agree with the résumé.** The two get read side by side, and a
+   contradiction reads as inflation.
+2. **`repo` and `demo` are optional.** A link that 404s or hits a login wall
+   costs more credibility than no link at all, so a system with neither renders
+   a "private repository" chip instead. Fill one in the moment a repo goes
+   public — nothing else needs to change.
+
+To regenerate the social share card after changing the headline numbers:
+
+```bash
+node scripts/og.mjs      # writes public/og.png
+```
+
+`BUILD_KB` in `data.ts` is quoted in the footer and the sandbox panel. If the
+bundle size moves meaningfully, update it — check `npm run build` output and add
+the main CSS, main JS and client chunk gzip figures.
 
 ## Structure
 
 ```
+index.html                 # entry for /
+v1/index.html              # entry for /v1  (loads the original app)
 src/
-├── data/portfolio.ts                 # ← single source of truth for all content
-├── components/
-│   ├── effects/
-│   │   ├── ShaderBackground.tsx       # raw-WebGL amber field (no three.js)
-│   │   └── CursorSpotlight.tsx        # custom cursor + screen-blend spotlight
+├── site/                  # the current portfolio
+│   ├── data.ts            # ← single source of truth for all content
+│   ├── Site.tsx
 │   ├── ui/
-│   │   ├── splite.tsx                 # lazy-loaded Spline wrapper
-│   │   ├── spotlight.tsx              # hero SVG spotlight
-│   │   ├── container.tsx              # layout column
-│   │   ├── section-heading.tsx        # shared section header
-│   │   ├── brand-icons.tsx            # GitHub / LinkedIn / X SVGs
-│   │   ├── container-scroll.tsx       # scroll-driven 3D showcase (Projects)
-│   │   └── radial-orbital-timeline.tsx# orbiting timeline (Journey)
-│   └── sections/                      # Navbar, Hero, About, Skills,
-│                                      #   Projects, Journey, Contact
-├── App.tsx                            # composition + global background/cursor
-├── main.tsx
-└── index.css                          # theme tokens, cursor + scrollbar styles
+│   │   ├── Topology.tsx   # the pipeline diagram (signature component)
+│   │   └── parts.tsx      # Panel, Chip, Readout
+│   └── sections/          # StatusBar, Hero, Systems, Record, Stack,
+│                          #   Sandbox, Contact
+├── site.css               # tokens + every component style for /
+├── v1.tsx                 # entry module for the archived build
+├── App.tsx, components/   # the archived build, untouched
+└── index.css              # Tailwind + tokens, used only by /v1
 ```
+
+`/` is plain CSS with no Tailwind, which is most of why it fits in 59 KB.
+`/v1` still uses Tailwind via `index.css`; the two never share tokens.
 
 ## Design system
 
-- **Theme:** dark-first, amber primary (`36 100% 60%`) — tokens in `index.css`.
-- **Fonts:** Instrument Serif (display), Sora (body), JetBrains Mono (labels).
-- **Performance:** exactly one WebGL Spline scene (hero, lazy-loaded); the
-  shader background renders at a capped pixel ratio and pauses when the tab is
-  hidden or `prefers-reduced-motion` is set. The custom cursor only engages on
-  fine pointers (desktop).
+`PRODUCT.md` holds the product truth, `DESIGN.md` the visual system — palette,
+type scale, component contracts, and the rules the build is held to. Read
+`DESIGN.md` before changing anything visual on `/`.
 
-## Credits
+Short version: a light gridded engineering canvas, graphite ink, four
+functional state colors (ready / active / queued / fault) that are only ever
+used to report state, hard 1px rules, nothing rounder than 4px, no shadows and
+no glow. Archivo for structure, JetBrains Mono for every number and label.
 
-Effects adapted (not copied) from [21st.dev](https://21st.dev) community
-components — shader fields, the Aceternity container-scroll, and a radial
-orbital timeline — recolored and rebuilt to fit this theme.
+## A note on the build
+
+`vite.config.ts` pins `NODE_ENV=production` for builds on purpose. This machine
+exports `NODE_ENV=local` from the shell profile, and both Vite and
+`@vitejs/plugin-react` read it — without the pin, a production build silently
+ships the development React (the dev JSX transform plus both copies of
+react-dom, roughly double the JS). Do not remove it.
+
+## Checks
+
+```bash
+node scripts/shoot.mjs     # desktop + mobile screenshots to /tmp/shots
+node scripts/widths.mjs    # overflow + text-clipping across 11 breakpoints
+node scripts/check.mjs     # /v1 boots, a11y structure, tab order
+node scripts/final.mjs     # reduced motion, load timing, link inventory
+```
+
+Run `npm run preview` first — they all point at `:4173`.
