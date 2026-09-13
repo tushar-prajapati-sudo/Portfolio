@@ -343,10 +343,11 @@ the entire left half of the screen became a dead zone. A sticky sidebar is not
 a modal; it never traps the wheel.
 
 ### The cursor
-A CAD crosshair tracks the pointer — two 1px `--line-strong` rules spanning the
-viewport — with a 460px soft white light beneath it. The surface is a
-measurement canvas, so a crosshair is its native cursor rather than an
-ornament. Position is written as two custom properties feeding transforms only,
+A CAD crosshair tracks the pointer: two 1px rules spanning the viewport at
+`rgba(134,145,158,0.3)` — faint enough to read as a guide rather than a
+graphic, and mid-toned so it survives both the light canvas and the graphite
+fields. The surface is a measurement canvas, so a crosshair is its native
+cursor rather than an ornament. No light or glow sits under it. Position is written as two custom properties feeding transforms only,
 so it composites. It is off entirely for coarse pointers and for reduced
 motion, and it never intercepts a click.
 

@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 
 /**
- * A CAD crosshair that tracks the pointer, with a soft light under it.
- * The surface is a measurement canvas, so a crosshair is the native cursor
- * for it. Position is written as two custom properties that feed transforms
- * only, so the whole thing composites and never lays out.
+ * A CAD crosshair that tracks the pointer. The surface is a measurement
+ * canvas, so a crosshair is the native cursor for it. Position is written as
+ * two custom properties that feed transforms only, so it composites and never
+ * lays out.
  *
  * Off for coarse pointers and for anyone who asked for reduced motion.
  */
@@ -48,7 +48,6 @@ export function CursorField() {
 
   return (
     <div className="cursor-field" ref={ref} data-on="false" aria-hidden="true">
-      <span className="cursor-glow" />
       <span className="cursor-h" />
       <span className="cursor-v" />
     </div>
